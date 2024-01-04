@@ -6,8 +6,9 @@
 # This program generates a random planer network of uniform density over a circular area.
 #
 # Call this as
-#   main <num_node> <max_range> <file_name>
+#   main <file_name> -n=<n> -r=<max_radius> -rho=<density>
 
+import argparse
 import math
 import random
 import sys
@@ -51,8 +52,8 @@ def FindLinks(nodeLoc):
 
     return link
 
-def SaveNet(nodeLoc, links, filename):
-    with open(filename, 'w') as file:
+def SaveNet(nodeLoc, links, fileName):
+    with open(fileName, 'w') as file:
         nNode = len(nodeLoc)
         file.write(str(nNode) + '\n')
 
@@ -68,17 +69,53 @@ def SaveNet(nodeLoc, links, filename):
         file.close()
 
 
+def ParseArgs():
+    parser = argparse.ArgumentParser(
+        prog='RandNetCirc',
+        description='This program will generate a random network over a circular area.'
+    )
+
+    parser.add_argument('fileName', type=str)
+    parser.add_argument('-n', type=int)
+    parser.add_argument('-r', type=float)
+    parser.add_argument('-rho', type=float)
+
+    args = parser.parse_args()
+
+    if (args.n != None) and (args.r != None) and (args.rho != None):
+        raise Exception("Over specification of parameters")
+
+    if (args.n != None) and (args.r != None):
+        n = args.n
+        r = args.r
+        rho = math.pi * Sqr(r) / n
+
+    elif (args.n != None) and (args.rho != None):
+        n = args.n
+        rho = args.rho
+
+        area = n / rho
+        r = math.sqrt(area / math.pi)
+
+    elif (args.r != None) and (args.rho != None):
+        r = args.r
+        rho = args.rho
+
+        area = math.pi * Sqr(r)
+        n = math.round(area * rho)
+
+        area = n / rho
+        r = math.sqrt(area / math.pi)
+
+    return [args.fileName, n, r, rho]
+    
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print("This is main.")
-
-    # TODO:  Switch to using the argparse module (or is that package)
-    n = int(sys.argv[1])
-    maxRad = float(sys.argv[2])
-    fileName = sys.argv[3]
+    fileName, n, r, rho = ParseArgs()
+    print('n = %d, r = %f, rho = %f\n' % (n, r, rho))
 
     random.seed(0)
-    nodeLoc = RandNodeCirc(n, maxRad)
+    nodeLoc = RandNodeCirc(n, r)
     link = FindLinks(nodeLoc)
 
     SaveNet(nodeLoc, link, fileName)
