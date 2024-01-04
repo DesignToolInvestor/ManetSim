@@ -38,8 +38,19 @@ def ReadNet(fileName):
 
 
 def GraphNet(net):
-    # TODO:
+    # pattern match on net
     nodeL, linkL = net
+
+    # setup plot
+    fig, ax = plot.subplots()
+
+    # plot links
+    x = []
+    y = []
+    for link in linkL:
+        x = [nodeL[link[0]][0], nodeL[link[1]][0]]
+        y = [nodeL[link[0]][1], nodeL[link[1]][1]]
+        ax.plot(x,y, color='blue')
 
     # plot nodes
     # TODO: Create an unzip function
@@ -49,18 +60,9 @@ def GraphNet(net):
         x.append(node[0])
         y.append(node[1])
 
-    fig, ax = plot.subplots()
     ax.scatter(x,y, color='red')
 
-    # plot links
-    x = []
-    y = []
-    for link in linkL:
-        line = (nodeL[link[0]], nodeL[link[1]])
-        linkLine.append(line)
-
-    ax.plot(x,y, color='blue')
-
+    # show graph
     plot.show()
 
 
