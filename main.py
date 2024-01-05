@@ -9,9 +9,10 @@
 #   main <file_name> -n=<n> -r=<max_radius> -rho=<density>
 
 import argparse
+import localmath
 import math
+import Net
 import random
-import sys
 
 def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     result = []
@@ -25,21 +26,6 @@ def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     return result
 
 
-def PrintList(nodeLoc):
-    for point in nodeLoc:
-        print(point[0], ", ", point[1])
-
-
-# TODO:  Move to project math library
-def Sqr(num):
-    return num*num
-
-
-# TODO:  Move to project math library
-def Dist(node1, node2):
-    return math.sqrt(Sqr(node2[0] - node1[0]) + Sqr(node2[1] - node1[1]))
-
-
 # Links will be in order sorted by x-index and then y-index
 def FindLinks(nodeLoc):
     n = len(nodeLoc)
@@ -47,26 +33,10 @@ def FindLinks(nodeLoc):
     link = []
     for k in range(n):
         for j in range(k+1,n):
-            if Dist(nodeLoc[k],nodeLoc[j]) < 1:
+            if localmath.Dist(nodeLoc[k],nodeLoc[j]) < 1:
                 link.append([k,j])
 
     return link
-
-def SaveNet(nodeLoc, links, fileName):
-    with open(fileName, 'w') as file:
-        nNode = len(nodeLoc)
-        file.write(str(nNode) + '\n')
-
-        for point in nodeLoc:
-            file.write(str(point[0]) + ", " + str(point[1]) + "\n")
-
-        nLink = len(links)
-        file.write(str(nLink) + '\n')
-
-        for link in links:
-            file.write(str(link[0]) + ", " + str(link[1]) + "\n")
-
-        file.close()
 
 
 def ParseArgs():
@@ -118,7 +88,8 @@ if __name__ == '__main__':
     nodeLoc = RandNodeCirc(n, r)
     link = FindLinks(nodeLoc)
 
-    SaveNet(nodeLoc, link, fileName)
+    net = (nodeLoc,link)
+    Net.WriteNet(net, fileName)
 
 # TODO:  Figure out how to make this work
 if __name__ == '__test__':
