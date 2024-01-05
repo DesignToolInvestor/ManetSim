@@ -1,5 +1,5 @@
 #
-# main.py
+# GenRand.py
 #
 # TODO:  Change the name of this file to be more meaningful.
 #
