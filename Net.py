@@ -20,6 +20,8 @@
 
 # TODO:  Move inside some larger library, perhaps called ParkerLevy
 
+import scanf
+
 def ReadNet(fileName):
     # open file
     file = open(fileName, 'r')
