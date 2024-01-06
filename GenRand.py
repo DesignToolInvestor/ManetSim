@@ -8,11 +8,14 @@
 # Call this as
 #   main <file_name> -n=<n> -r=<max_radius> -rho=<density>
 
+# system libraries
 import argparse
-import localmath
 import math
-import Net
 import random
+
+# local libraries
+import LocMath
+import Net
 
 def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     result = []
