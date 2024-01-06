@@ -1,5 +1,5 @@
 #
-# localmath.py
+# L o c M a t h . p y
 #
 # TODO:  Move inside some larger library, perhaps called ParkerLevy
 #
