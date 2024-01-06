@@ -16,6 +16,9 @@ def GraphNet(net):
 
     # setup plot
     fig, ax = plot.subplots()
+    # TODO: setting the size doesn't seem to be working
+    plot.figure(figsize = (9, 6.5))
+    ax.set_aspect('equal')
 
     # plot links
     x = []
