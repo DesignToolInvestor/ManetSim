@@ -1,5 +1,5 @@
 #
-# GenRand.py
+# gen_rand.py
 #
 # TODO:  Change the name of this file to be more meaningful.
 #
