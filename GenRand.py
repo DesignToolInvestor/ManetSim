@@ -29,15 +29,32 @@ def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     return result
 
 
+# TODO:  Replace to functions with lambda function as argument
+
 # Links will be in order sorted by x-index and then y-index
-def FindLinks(nodeLoc):
+
+def FindBiLinksSlow(nodeLoc):
     n = len(nodeLoc)
 
     link = []
     for k in range(n):
         for j in range(k+1,n):
-            if localmath.Dist(nodeLoc[k],nodeLoc[j]) < 1:
+            if LocMath.Dist(nodeLoc[k],nodeLoc[j]) < 1:
                 link.append([k,j])
+
+    return link
+
+
+# TODO:  Think about rather links should be sorted or not.  Right now they are not.
+def FindDirLinksSlow(nodeLoc):
+    n = len(nodeLoc)
+
+    link = []
+    for k in range(n):
+        for j in range(k+1,n):
+            if LocMath.Dist(nodeLoc[k],nodeLoc[j]) < 1:
+                link.append([k,j])
+                link.append([j,k])
 
     return link
 
@@ -52,6 +69,7 @@ def ParseArgs():
     parser.add_argument('-n', type=int)
     parser.add_argument('-r', type=float)
     parser.add_argument('-rho', type=float)
+    parser.add_argument('-dir', type=bool, default=False)
 
     args = parser.parse_args()
 
@@ -80,19 +98,26 @@ def ParseArgs():
         area = n / rho
         r = math.sqrt(area / math.pi)
 
-    return [args.fileName, n, r, rho]
+    else:
+        raise Exception("Under specification of parameters")
+
+    return [args.fileName, n, r, rho, args.dir]
     
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    fileName, n, r, rho = ParseArgs()
+    fileName,n,r,rho,dir = ParseArgs()
     print('n = %d, r = %f, rho = %f\n' % (n, r, rho))
 
     random.seed(0)
     nodeLoc = RandNodeCirc(n, r)
-    link = FindLinks(nodeLoc)
 
-    net = (nodeLoc,link)
-    Net.WriteNet(net, fileName)
+    if dir:
+        links = FindDirLinksSlow(nodeLoc)
+    else:
+        links = FindBiLinksSlow(nodeLoc)
+
+    net = (nodeLoc,links)
+    Net.WriteNet(net, dir, fileName)
 
 # TODO:  Figure out how to make this work
 if __name__ == '__test__':
