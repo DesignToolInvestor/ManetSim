@@ -65,7 +65,10 @@ if __name__ == '__main__':
     fileName = sys.argv[1]
     nFlow = int(sys.argv[2])
 
-    net = Net.ReadNet(fileName)
+    net,direct = Net.ReadNet(fileName)
+    if ~direct:
+        raise Exception("The network must be directional.")
+
     nodes,links = net
     nNode = len(nodes)
     nLink = len(links)
@@ -81,8 +84,17 @@ if __name__ == '__main__':
     # convert to fanout style network
     node2LinkOut = []
     node2LinkIn = []
-    for k in range(nNode):
+    for nodeNum in range(nNode):
+        node2LinkOut.append([])
+        node2LinkIn.append([])
 
+    for linkNum in range(nLink):
+        (nodeStart,nodeStop) = links[linkNum]
+        node2LinkOut[nodeStart].append(linkNum)
+        node2LinkIn[nodeStop].append(linkNum)
+
+    print(node2LinkOut)
+    print(node2LinkIn)
 
     ###########################
     # Setup the problem
