@@ -6,7 +6,7 @@
 # This program generates a random planer network of uniform density over a circular area.
 #
 # Call this as
-#   main <file_name> -n=<n> -r=<max_radius> -rho=<density>
+#   main <file_name> -n=<n> -r=<max_radius> -rho=<density> -seed=<seed>
 
 # system libraries
 import argparse
@@ -70,6 +70,7 @@ def ParseArgs():
     parser.add_argument('-r', type=float)
     parser.add_argument('-rho', type=float)
     parser.add_argument('-dir', type=bool, default=False)
+    parser.add_argument('-seed', type=int)
 
     args = parser.parse_args()
 
@@ -101,14 +102,21 @@ def ParseArgs():
     else:
         raise Exception("Under specification of parameters")
 
-    return [args.fileName, n, r, rho, args.dir]
+    return [args.fileName, n, r, rho, args.dir, args.seed]
     
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    fileName,n,r,rho,dir = ParseArgs()
-    print('n = %d, r = %f, rho = %f\n' % (n, r, rho))
+    SEED_LIM = 100_000
 
-    random.seed(0)
+    fileBase,n,r,rho,dir,seed = ParseArgs()
+    print('n = %d, r = %f, rho = %f' % (n, r, rho))
+
+    if seed == None:
+        random.seed()
+        seed = random.randint(SEED_LIM)
+    print('seed = %d' % seed)
+
+    random.seed(seed)
     nodeLoc = RandNodeCirc(n, r)
 
     if dir:
@@ -117,7 +125,7 @@ if __name__ == '__main__':
         links = FindBiLinksSlow(nodeLoc)
 
     net = (nodeLoc,links)
-    Net.WriteNet(net, dir, fileName)
+    Net.WriteNet(net, dir, fileBase + '_' + str(seed) + '.net')
 
 # TODO:  Figure out how to make this work
 if __name__ == '__test__':
