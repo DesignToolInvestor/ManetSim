@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     if seed == None:
         random.seed()
-        seed = random.randint(SEED_LIM)
+        seed = random.randint(0, SEED_LIM - 1)
     print('seed = %d' % seed)
 
     random.seed(seed)
