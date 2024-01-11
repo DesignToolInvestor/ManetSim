@@ -15,7 +15,9 @@ import random
 
 # local libraries
 import LocMath
+#import LocUtil
 import Net
+
 
 def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     result = []
@@ -111,9 +113,7 @@ if __name__ == '__main__':
     fileBase,n,r,rho,dir,seed = ParseArgs()
     print('n = %d, r = %f, rho = %f' % (n, r, rho))
 
-    if seed == None:
-        random.seed()
-        seed = random.randint(0, SEED_LIM - 1)
+    seed = SetSeed(seed)
     print('seed = %d' % seed)
 
     random.seed(seed)
