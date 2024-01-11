@@ -9,11 +9,13 @@
 # Call this as
 #   SingleStrand <net_file> -n=<num_flow>
 
+# system packages
+import argparse
 import cvxpy
 import random
-import sys
+import scanf
 
-
+# local packages
 import Net
 import LocUtil
 import LocMath
@@ -58,29 +60,16 @@ def Net2FanLink(net):
     # return results
     return linkFan
     
-    
-if __name__ == '__main__':
-    # parse command line
-    # TODO:  Switch to using argparse
-    fileName = sys.argv[1]
-    nFlow = int(sys.argv[2])
 
-    # read network
-    net,direct = Net.ReadNet(fileName)
-    if not direct:
-        raise Exception("The network must be directional.")
-
-    nodes,links = net
-    nNode = len(nodes)
-    nLink = len(links)
+###############################################################################
+def OptFlow(net, flow):
+    # parse parameters
+    node,link = net
+    nNode = len(node)
+    nLink = len(link)
 
     # compute link cost
     linkCost = LinkCost(net)
-
-    # pick random end points
-    random.seed(0)
-    flowEnds = RandEnds(nNode, nFlow)
-    print(flowEnds)
 
     # convert to fanout style network
     node2LinkOut = []
@@ -90,9 +79,9 @@ if __name__ == '__main__':
         node2LinkIn.append([])
 
     for linkNum in range(nLink):
-        (nodeStart,nodeStop) = links[linkNum]
-        node2LinkOut[nodeStart].append(linkNum)
-        node2LinkIn[nodeStop].append(linkNum)
+        start, stop = links[linkNum]
+        node2LinkOut[start].append(linkNum)
+        node2LinkIn[stop].append(linkNum)
 
     ###########################################################
     # Setup the problem
@@ -100,9 +89,9 @@ if __name__ == '__main__':
     ###########################
     # define the variables and the parameter
     # TODO:  This should be a vector rather than a list
-    linkFlow = []
+    linkRate = []
     for k in range(nLink):
-        linkFlow.append(cvxpy.Variable())
+        linkRate.append(cvxpy.Variable())
 
     flowRate = cvxpy.Parameter(nonneg=True)
 
@@ -111,42 +100,54 @@ if __name__ == '__main__':
     constraints = []
 
     # constraints at the ends of the flows
-    for flowNum in range(nFlow):
-        source,sink = flowEnds[flowNum]
+    for flowId in range(nFlow):
+        source, sink = flow[flowId]
 
-        outLinks = LocUtil.Index(linkFlow, node2LinkOut[source])
-        constraints.append(sum(outLinks) == flowRate)
+        outLink = LocUtil.Index(linkRate, node2LinkOut[source])
+        print(f'{node2LinkOut[source]} = {flowRate}')
+        constraints.append(sum(outLink) == flowRate)
 
-        inLinks = LocUtil.Index(linkFlow, node2LinkIn[sink])
-        constraints.append(sum(inLinks) == flowRate)
+        inLink = LocUtil.Index(linkRate, node2LinkIn[sink])
+        print(f'{node2LinkIn[sink]} = {flowRate}')
+        constraints.append(sum(inLink) == flowRate)
 
     # constraints for conservation of flow (except at ends of the flows)
+    flowEnds = LocUtil.FlattenAll(flow)
     for nodeNum in range(nNode):
         if nodeNum not in flowEnds:
-            outLinks = LocUtil.Index(linkFlow, node2LinkOut[nodeNum])
-            inLinks = LocUtil.Index(linkFlow, node2LinkIn[nodeNum])
-            constraints.append(sum(inLinks) == sum(inLinks))
+            outLink = LocUtil.Index(linkRate, node2LinkOut[nodeNum])
+            inLink = LocUtil.Index(linkRate, node2LinkIn[nodeNum])
+            print(f'{node2LinkOut[nodeNum]} = {node2LinkIn[nodeNum]}')
+            constraints.append(sum(inLink) == sum(outLink))
 
-    # constraints for not overloading the nodes -- non-sink or source nodes
+    # constraints for avoiding overloading the nodes -- neither sink nor source nodes
     for nodeNum in range(nNode):
         if nodeNum not in flowEnds:
-            outLinks = LocUtil.Index(linkFlow, node2LinkOut[nodeNum])
-            constraints.append(sum(outLinks) <= 1)
+            outLink = LocUtil.Index(linkRate, node2LinkOut[nodeNum])
+            inLink = LocUtil.Index(linkRate, node2LinkIn[nodeNum])
+
+            temp = node2LinkOut[nodeNum] + node2LinkIn[nodeNum]
+            print(f'{temp} <= 1')
+            constraints.append(sum(outLink) + sum(inLink) <= 1)
 
     # constraints for not overloading the nodes -- sink and source nodes
-    for flowNum in range(nFlow):
-        source,sink = flowEnds[flowNum]
+    for flowId in range(nFlow):
+        source,sink = flow[flowId]
 
-        outLinks = LocUtil.Index(linkFlow, node2LinkOut[source])
-        inLinks = LocUtil.Index(linkFlow, node2LinkIn[source])
-        constraints.append(sum(outLinks) + sum(inLinks) <= 1)
+        outLink = LocUtil.Index(linkRate, node2LinkOut[source])
+        inLink = LocUtil.Index(linkRate, node2LinkIn[source])
 
-        outLinks = LocUtil.Index(linkFlow, node2LinkOut[sink])
-        inLinks = LocUtil.Index(linkFlow, node2LinkIn[sink])
-        constraints.append(sum(outLinks) + sum(inLinks) <= 1)
+        temp = node2LinkOut[source] + node2LinkIn[source]
+        print(f'{temp} <= 1')
+
+        constraints.append(sum(outLink) + sum(inLink) <= 1)
+
+        outLink = LocUtil.Index(linkRate, node2LinkOut[sink])
+        inLink = LocUtil.Index(linkRate, node2LinkIn[sink])
+        constraints.append(sum(outLink) + sum(inLink) <= 1)
 
     # constraints for not overloading links
-    for link in linkFlow:
+    for link in linkRate:
         constraints.append(0 <= link)
         constraints.append(link <= 1)
 
@@ -154,14 +155,14 @@ if __name__ == '__main__':
     # set up the problem
     factors = []
     for linkNum in range(nLink):
-        factors.append(linkCost[linkNum] * linkFlow[linkNum])
+        factors.append(linkCost[linkNum] * linkRate[linkNum])
     goal = cvxpy.Minimize(sum(factors))
 
     prob = cvxpy.Problem(goal, constraints)
 
     ###################################
     # solve the problem
-    flowRate.value = 1/4
+    flowRate.value = 1
     prob.solve()
     print(f'Solution = {prob.status}')
 
@@ -169,6 +170,62 @@ if __name__ == '__main__':
     # print the solution
     psudoEps = 1e-10;
     for linkNum in range(nLink):
-        rate = linkFlow[linkNum].value
+        rate = linkRate[linkNum].value
         if rate > psudoEps:
             print(f'{linkNum}: {rate}')
+
+
+
+###############################################################################
+def ParseArgs():
+    parser = argparse.ArgumentParser(
+        prog='flow',
+        description='This program will compute the path of the optimal flow'
+    )
+
+    parser.add_argument('fileName', type=str)
+    parser.add_argument('-n', type=int)
+    parser.add_argument('-flow', type=str)
+    parser.add_argument('-seed', type=int)
+
+    args = parser.parse_args()
+    if (args.n == None) and (args.flow == None):
+        raise Exception('Must either specify the number of flows (to be picked randomly) or the flows')
+    elif (args.n != None) and (args.flow != None):
+        raise Exception("Can't specify both the number of random flows and the flows")
+
+    return [args.fileName, args.n, args.flow, args.seed]
+
+
+if __name__ == '__main__':
+    # parse command line
+    fileName,n,flowStr,seed = ParseArgs()
+
+    # read network
+    net,direct = Net.ReadNet(fileName)
+    if not direct:
+        raise Exception("The network must be directional.")
+    nodes,links = net
+    nNode = len(nodes)
+
+    # deal with flows
+    if n != None:
+        assert(flowStr == None)
+        seed = SetSeed(seed)
+
+        # TODO:  Do choose without replacement
+        flow = []
+        for k in range(n):
+            source = random.randint(0, nNode - 1)
+            sink = random.randint(0, nNode - 1)
+            flow[k].append([source, sink])
+
+    else:
+        assert(flowStr != None)
+
+        # TODO:  Add the ability to specify more than one flow
+        flow = [scanf.scanf("(%d,%d)", flowStr)]
+        if flow != None
+            nFlow = 1
+
+    OptFlow(net, flow)
