@@ -68,6 +68,8 @@ def OptFlow(net, flow):
     nNode = len(node)
     nLink = len(link)
 
+    nFlow = len(flow)
+
     # compute link cost
     linkCost = LinkCost(net)
 
@@ -223,9 +225,7 @@ if __name__ == '__main__':
     else:
         assert(flowStr != None)
 
-        # TODO:  Add the ability to specify more than one flow
-        flow = [scanf.scanf("(%d,%d)", flowStr)]
-        if flow != None
-            nFlow = 1
+        flowStrList = flowStr.split("),")
+        flow = list(map(lambda str: scanf.scanf("(%d,%d", str), flowStrList))
 
     OptFlow(net, flow)
