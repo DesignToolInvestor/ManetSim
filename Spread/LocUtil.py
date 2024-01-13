@@ -54,3 +54,25 @@ def FlattenAll(input):
             result.append(elem)
 
     return result
+
+
+# TODO:  rewrite as a one-liner (ethan)
+# TODO:  use sorting to make int O(n * ln(m)) rather than O(n * m)
+def ListMinus(a,b):
+    result = []
+    for elem in a:
+        if elem not in b:
+            result.append(elem)
+    return result
+
+
+def List2Str(inL):
+    out = "["
+
+    nIn = len(inL)
+    for k in range(nIn - 1):
+        out += str(inL[k]) + ", "
+
+    out += str(inL[nIn - 1]) + "]"
+
+    return out
