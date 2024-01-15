@@ -19,48 +19,6 @@ import LocMath
 import Net
 
 
-def RandNodeCirc(n, maxRad) -> list[[float,float]]:
-    result = []
-    for i in range(n):
-        angle = random.random() * 2 * math.pi
-        radQ = random.random()
-        rad = math.sqrt(radQ * maxRad*maxRad)
-        x = rad * math.cos(angle)
-        y = rad * math.sin(angle)
-        result.append([x,y])
-    return result
-
-
-# TODO:  Replace to functions with lambda function as argument
-
-# Links will be in order sorted by x-index and then y-index
-
-def FindBiLinksSlow(nodeLoc):
-    n = len(nodeLoc)
-
-    link = []
-    for k in range(n):
-        for j in range(k+1,n):
-            if LocMath.Dist(nodeLoc[k],nodeLoc[j]) < 1:
-                link.append([k,j])
-
-    return link
-
-
-# TODO:  Think about rather links should be sorted or not.  Right now they are not.
-def FindDirLinksSlow(nodeLoc):
-    n = len(nodeLoc)
-
-    link = []
-    for k in range(n):
-        for j in range(k+1,n):
-            if LocMath.Dist(nodeLoc[k],nodeLoc[j]) < 1:
-                link.append([k,j])
-                link.append([j,k])
-
-    return link
-
-
 def ParseArgs():
     parser = argparse.ArgumentParser(
         prog='RandNetCirc',
