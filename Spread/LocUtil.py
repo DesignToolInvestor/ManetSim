@@ -2,8 +2,7 @@
 # L o c U t i l . p y
 #
 
-#import random
-
+import random
 
 def Index(table, index):
     result = []
@@ -35,7 +34,7 @@ def PointToXY(pointLines):
     return []
 
 
-def SetSeed(seed):
+def SetSeed(seed = None):
     MAX_SEED = 99_999
     if seed == None:
         random.seed()
@@ -76,3 +75,12 @@ def List2Str(inL):
     out += str(inL[nIn - 1]) + "]"
 
     return out
+
+
+def MaskToIndex(mask):
+    result = []
+    for i in range(len(mask)):
+        if mask[i]:
+            result.append(i)
+
+    return result
