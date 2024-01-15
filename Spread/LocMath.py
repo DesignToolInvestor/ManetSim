@@ -5,6 +5,7 @@
 #
 
 import math
+import random
 
 def Sqr(num):
     return num*num
@@ -30,3 +31,7 @@ def Interp(seg, pathFrac):
     result = [start[0] + pathFrac * vecDiff[0], start[1] + pathFrac * vecDiff[1]]
 
     return result
+
+
+def RandLog(min, max):
+    return math.exp(random.uniform(math.log(min), math.log(max)))
