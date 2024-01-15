@@ -10,8 +10,10 @@
 #   SingleStrand <net_file> -n=<num_flow>
 
 # system packages
+
 import argparse
 import cvxpy
+from datetime import datetime
 import random
 import scanf
 
@@ -78,6 +80,8 @@ def Trace(format, stream=None, link0=None, link1=None):
 
 ###############################################################################
 def OptFlow(net, stream):
+    startTime = datetime.now()
+
     # parse parameters
     node,link = net
     nNode = len(node)
@@ -200,7 +204,18 @@ def OptFlow(net, stream):
     ###################################
     # solve the problem
     flowRate.value = 3/4
+
+    endTime = datetime.now()
+    elapsed = endTime - startTime
+    print(f'Setup time {elapsed}')
+
+    startTime = datetime.now()
     prob.solve()
+
+    endTime = datetime.now()
+    elapsed = endTime - startTime
+    print(f'Solve time {elapsed}')
+
     print(f'Solution = {prob.status}')
 
     ###################################
