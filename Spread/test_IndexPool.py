@@ -38,6 +38,15 @@ class Basic(TestIndexPool):
             value = self.indexPool.Drop(i)
         self.assertEqual(self.indexPool.pool, [])
 
+
+    def test_getter(self):
+        for i in range(0, 10, 2):
+            self.indexPool.Push(i)
+        for i in range(10):
+            isActive = self.indexPool.Active(i)
+            self.assertEqual(isActive, (i % 2) == 0)
+
+
 # TODO:  Increase the size of the index
 class Shuffle(TestIndexPool):
     def test_pool(self):
