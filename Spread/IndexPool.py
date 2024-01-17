@@ -15,10 +15,14 @@
 # slower than the O(ln(n)) method because of memory affects (e.g., cacheing and paging). 
 
 class IndexPool:
-    def __init__(self, indexSize):
+    def __init__(self, indexSize, initFull = False):
         self.indexSize = indexSize
-        self.poolIndex = [-1 for k in range(indexSize)]
-        self.pool = []
+        if initFull:
+            self.poolIndex = [k for k in range(indexSize)]
+            self.pool = self.poolIndex.copy()
+        else:
+            self.poolIndex = [-1 for k in range(indexSize)]
+            self.pool = []
 
     def Push(self, elemId):
         if (self.poolIndex[elemId] == -1):
@@ -44,3 +48,11 @@ class IndexPool:
             elemId = self.pool.pop()
             self.poolIndex[elemId] = -1
             return elemId
+
+
+    def Len(self) -> int:
+        return len(self.pool)
+
+
+    def Active(self, index) -> bool:
+        return (self.poolIndex[index] >= 0)
