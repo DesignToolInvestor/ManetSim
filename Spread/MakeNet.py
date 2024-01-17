@@ -5,6 +5,8 @@
 import math
 import random
 
+import LocMath
+
 def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     result = []
     for i in range(n):
@@ -42,7 +44,7 @@ def FindDirLinksSlow(nodeLoc) -> list[int,int]:
 
     return link
 
-def RandCircNet(n,r, dir=False) -> [list[[float,float], list[int,int]]]:
+def RandNetCirc(n,r, dir=False) -> [list[[float,float], list[int,int]]]:
     nodeLoc = RandNodeCirc(n, r)
 
     if dir:
