@@ -6,8 +6,13 @@ import random
 
 def Index(table, index):
     result = []
-    for k in index:
-        result.append(table[k])
+    for i in index:
+        if type(i) == list:
+            value = Index(table, i)
+        else:
+            value = table[i]
+
+        result.append(value)
     return result
 
 
@@ -34,8 +39,8 @@ def PointToXY(pointLines):
     return []
 
 
-def SetSeed(seed = None):
-    MAX_SEED = 99_999
+def SetSeed(seed = None, digits = 5):
+    MAX_SEED = 10**digits - 1
     if seed == None:
         random.seed()
         seed = random.randint(0, MAX_SEED)
@@ -84,3 +89,13 @@ def MaskToIndex(mask):
             result.append(i)
 
     return result
+
+
+def MapInverse(map_, nOld):
+    assert(max(map_) < nOld)
+    invMap = [-1 for _ in range(nOld)]
+    for newId in range(len(map_)):
+        oldId = map_[newId]
+        invMap[oldId] = newId
+
+    return invMap
