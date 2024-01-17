@@ -3,7 +3,7 @@
 #
 # This is a file of visualization functions.  It is intended as s sort of local library.
 #
-
+import enum
 # system imports
 import math
 import matplotlib.pyplot as plot
@@ -12,37 +12,31 @@ import matplotlib.pyplot as plot
 import LocMath
 import LocUtil
 
+enum.Enum('NetElm', ['NODE','LINK','ALL'])
 
-def GraphBiNet(net):
+def GraphBiNet(ax, net, showNode=True, showLink=True):
     # pattern match on net
-    nodes, links = net
+    nodeL, linkL = net
 
-    # setup plot
-    fig, ax = plot.subplots()
-    # TODO: setting the size doesn't seem to be working
-    plot.figure(figsize=(9, 6.5))
+    # axis properties
     ax.set_aspect('equal')
 
-    # plot links
-    x = []
-    y = []
-    for link in links:
-        x = [nodes[link[0]][0], nodes[link[1]][0]]
-        y = [nodes[link[0]][1], nodes[link[1]][1]]
-        ax.plot(x,y, color='blue')
+    # plot nodeL
+    if showNode:
+        x,y = LocUtil.UnZip(nodeL)
+        ax.scatter(x,y, color='red', s=4)
 
-    # plot nodes
-    # TODO: Create an unzip function
-    x = []
-    y = []
-    for node in nodes:
-        x.append(node[0])
-        y.append(node[1])
+    # plot link
+    if showLink:
+        # TODO:  Figure out how to do this with improved versions of UnZip and Index
+        x = []
+        y = []
+        for link in linkL:
+            x = [nodeL[link[0]][0], nodeL[link[1]][0]]
+            y = [nodeL[link[0]][1], nodeL[link[1]][1]]
+            ax.plot(x,y, color='blue', linewidth=0.3)
 
-    ax.scatter(x,y, color='red')
-
-    # show graph
-    plot.show()
+    return ax
 
 
 ###############################################################################
@@ -128,9 +122,9 @@ def ArcArrow(arcDef, pathFrac, headWidth):
 #######################################
 # vistigual GraphDirNet section
 #     for linkNum in range(nLink):
-#         link = links[linkNum]
+#         link = linkL[linkNum]
 #
-#         (x,y),arcDef = Arc(nodes[link[0]],nodes[link[1]], MAX_OFF_SET,MAX_ARC)
+#         (x,y),arcDef = Arc(nodeL[link[0]],nodeL[link[1]], MAX_OFF_SET,MAX_ARC)
 #         ax.plot(x,y, color='blue')
 #
 #         lines = ArcArrow(arcDef, 2/3, 0.05)
@@ -146,32 +140,30 @@ def GraphDirNet(dirNet):
     MAX_ARC = math.pi/3
 
     # pattern match on dirNet
-    nodes,links = dirNet
-    nLink = len(links)
+    nodeL,linkL = dirNet
+    nLink = len(linkL)
 
     # setup plot
     fig,ax = plot.subplots()
-    # TODO: setting the size doesn't seem to be working ... kind of important bug
-    plot.figure(figsize=(9, 6.5))
     ax.set_aspect('equal')
 
-    # plot links
+    # plot linkL
     for linkNum in range(nLink):
-        link = links[linkNum]
+        link = linkL[linkNum]
         
-        seg = [nodes[link[0]], nodes[link[1]]]
+        seg = [nodeL[link[0]], nodeL[link[1]]]
         x = [seg[0][0], seg[1][0]]
         y = [seg[0][1], seg[1][1]]
-        ax.plot(x,y, color='blue')
+        ax.plot(x,y, color='blue', linewidth=0.2)
         
         point = LocMath.Interp(seg, 2/3)
         ax.text(point[0],point[1], str(linkNum), color="blue", ha="center", va="center")
 
-    # Plot nodes.  Want point on top of lines, so they come after line.
+    # Plot nodeL.  Want point on top of lines, so they come after line.
     # TODO: Change to create points and then unzip them for plotting
     x = []
     y = []
-    for node in nodes:
+    for node in nodeL:
         x.append(node[0])
         y.append(node[1])
 
