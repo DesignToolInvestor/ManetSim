@@ -9,16 +9,14 @@
 # TODO:  Document the arguments
 
 # system packages
-
 import argparse
-
 import random
 import scanf
 
-import LocMath
 # local packages
 import Net
 import MaxFlow
+import LocMath
 
 
 def RandEnds(nNode, nPair):
