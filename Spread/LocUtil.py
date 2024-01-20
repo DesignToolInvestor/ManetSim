@@ -82,6 +82,15 @@ def List2Str(inL):
     return out
 
 
+def Select(func, list_):
+    result = []
+    for i in range(len(list_)):
+        if func(list_[i]):
+            result.append(list_[i])
+
+    return result
+
+
 def MaskToIndex(mask):
     result = []
     for i in range(len(mask)):
@@ -99,3 +108,48 @@ def MapInverse(map_, nOld):
         invMap[oldId] = newId
 
     return invMap
+
+
+def MinMax(list_):
+    min_ = max_ = list_[0]
+    for i in range(1, len(list_)):
+        if list_[i] < min_:
+            min_ = list_[i]
+        if list_[i] > max_:
+            max_ = list_[i]
+
+    return [min_, max_]
+
+
+def Unique(list_):
+    sortList = sorted(list_.copy())
+
+    prev = sortList[0]
+    result = [prev]
+
+    for elem in sortList[1:]:
+        if elem != prev:
+            result.append(elem)
+            prev = elem
+    
+    return result
+    
+def Group(func, list_):
+    sortList = sorted(list_.copy(), key=func)
+
+    prevKey = func(sortList[0])
+    group = [sortList[0]]
+    result = []
+
+    for elem in sortList[1:]:
+        key = func(elem)
+        if key == prevKey:
+            group.append(elem)
+        else:
+            result.append(group)
+            prevKey = key
+            group = [elem]
+
+    result.append(group)
+
+    return result
