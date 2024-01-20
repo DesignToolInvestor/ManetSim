@@ -135,6 +135,8 @@ def ArcArrow(arcDef, pathFrac, headWidth):
 #         (x,y),ang = ArcPoint(arcDef, 1/3)
 #         ax.text(x,y, str(linkNum), va="center", ha="center")
 
+# TODO:  Change the interface to pass in and out the axis
+# TODO:  Combine with GraphBiNet
 def GraphDirNet(dirNet):
     MAX_OFF_SET = 0.05
     MAX_ARC = math.pi/3
