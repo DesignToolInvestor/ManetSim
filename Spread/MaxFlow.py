@@ -1,5 +1,5 @@
 #
-# MaxFlow.py
+# M a x F l o w . p y
 #
 
 import cvxpy
@@ -28,7 +28,7 @@ def LinkCostHelper(net, Metric):
 # TODO:  Make this an object that encapsulates it's state
 # TODO:  Make this a submodule of LocUtil
 
-TRACE_ON = True
+TRACE_ON = False
 
 def Trace(format, stream=None, link0=None, link1=None):
     if TRACE_ON:
