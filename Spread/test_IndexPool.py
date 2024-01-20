@@ -2,6 +2,8 @@
 # t e s t _ I n d e x P o o l . p y
 #
 
+# TODO:  Create a sub director for unit tests
+
 from unittest import TestCase
 
 import random
