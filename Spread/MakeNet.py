@@ -1,5 +1,5 @@
 #
-# R a n d N e t . p y
+# M a k e N e t . p y
 #
 
 import math
@@ -7,6 +7,26 @@ import random
 
 import LocMath
 
+#######################################
+# helper functions for dealing with density
+def MedStreamLern(r):
+    return r * 0.8919521800533872
+
+
+def MeanStreamLen(r):
+    return r * 0.9057653371064005
+
+
+def Rho(n, r):
+    return math.pi * LocMath.Sqr(r) / n
+
+
+def R(n, rho):
+    return math.sqrt(n / rho / math.pi)
+
+
+#######################################
+# make random node locations
 def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     result = []
     for i in range(n):
@@ -19,6 +39,8 @@ def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     return result
 
 
+#######################################
+# brute force link discovery
 def FindBiLinksSlow(nodeLoc) -> list[int,int]:
     n = len(nodeLoc)
 
@@ -44,6 +66,12 @@ def FindDirLinksSlow(nodeLoc) -> list[int,int]:
 
     return link
 
+
+###############################################################################
+# fast link discovery
+
+
+###############################################################################
 def RandNetCirc(n,r, dir=False) -> [list[[float,float], list[int,int]]]:
     nodeLoc = RandNodeCirc(n, r)
 
