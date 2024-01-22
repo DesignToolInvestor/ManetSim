@@ -6,11 +6,30 @@
 import argparse
 from matplotlib import pyplot as plot
 import math
-from scipy import stats
+import statistics
 
 # local packages
 import LocUtil
 import LocMath
+import MakeNet
+
+#######################################
+# graphing functions
+# def GraphData():
+
+# def GraphMed():
+
+def AddMedFlowScale(ax, medFlowLen, maxNumStream, maxCap):
+    axAlt = ax.secondary_yaxis(
+        location='right', functions=(lambda c: c / medFlowLen, lambda s: s * medFlowLen))
+
+    maxFlowLine = math.floor(maxCap / medFlowLen)
+    for numFlow in range(1, maxFlowLine + 1):
+        y = numFlow * medFlowLen
+        plot.plot([1, maxNumStream], [y,y], linestyle='--', linewidth=0.6, color='green')
+
+    axAlt.set_ylabel('Num Median Len Streams (at 100%)')
+    return ax
 
 
 #######################################
@@ -26,11 +45,10 @@ def ParseArgs():
 
     return args.fileName
 
-
 #######################################
 if __name__ == '__main__':
     # constants
-    NET_SIZE = 200
+    NET_SIZE = 400
 
     # parse command line
     fileName = ParseArgs()
@@ -42,10 +60,13 @@ if __name__ == '__main__':
 
     # select data
     data = LocUtil.Select(lambda info: info[0][0] == NET_SIZE, logData)
-    rho = list(map(lambda info: info[0][0] / (math.pi * LocMath.Sqr(info[0][1])), logData))
+    rho = list(
+        map(lambda p: MakeNet.Rho(*p),
+            map(lambda info: info[0][0:2], logData)))
+    r = data[0][0][1]
 
     # extract data
-    graphData = list(map(lambda info: [info[1][0], info[1][2]], data))
+    graphData = list(map(lambda info: [info[1][0], info[1][3]], data))
     nFlow,cap = LocUtil.UnZip(graphData)
 
     # graph data
@@ -57,10 +78,17 @@ if __name__ == '__main__':
 
     result = []
     for group in groupData:
-        nStream,agFlow = LocUtil.UnZip(groupData)
-        result.append([nStream[0], median(agFlow)])
+        nStream,agFlow = LocUtil.UnZip(group)
+        result.append([nStream[0], statistics.median(agFlow)])
+    x,y = LocUtil.UnZip(result)
 
-    plot.plot(LocUtil.UnZip(result), 'b')
+    plot.plot(x,y, 'b')
+
+    # median flow scale
+    medFlowLen = MakeNet.MedStreamLern(r)
+    maxNumStream = max(map(lambda p: p[0], graphData))
+    maxCap = max(map(lambda p: p[1], graphData))
+    ax = AddMedFlowScale(ax, medFlowLen, maxNumStream, maxCap)
 
     # labels and title
     ax.set_xlabel("Num of Stream")
@@ -68,5 +96,5 @@ if __name__ == '__main__':
     ax.set_title(f'N = {NET_SIZE}; Rho = 2')
 
     # save figure
-    plot.savefig('flow_graph.png', dpi=200)
+    plot.savefig(f'flow_graph_{NET_SIZE}.png', dpi=200)
     plot.show()
