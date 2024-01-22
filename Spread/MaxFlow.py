@@ -181,23 +181,21 @@ def MaxFlowRate(net, stream):
     goal = cvxpy.Maximize(flowRate)
     prob = cvxpy.Problem(goal, constraints)
 
+    # endTime = datetime.now()
+    # elapsed = endTime - startTime
+
     ###################################
     # solve the problem
 
-    endTime = datetime.now()
-    elapsed = endTime - startTime
-    print(f'Setup time {elapsed}')
-
-    startTime = datetime.now()
+    # startTime = datetime.now()
     prob.solve()
+    # endTime = datetime.now()
+    # elapsed = endTime - startTime
 
-    endTime = datetime.now()
-    elapsed = endTime - startTime
-    print(f'Solve time {elapsed}')
-
-    print(f'Solution = {prob.status}')
-
+    if (prob.status != cvxpy.OPTIMAL):
+        raise Exception(f"Didn't solve: status = {prob.status}")
     return flowRate.value
+
 
 ###############################################################################
 # vestigials
