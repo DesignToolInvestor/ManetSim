@@ -5,26 +5,28 @@
 # This script will increase the number of streams passed the point of saturating aggregate flow.
 
 # system packages
-import math
 import random
 from datetime import datetime
 
-import LocMath
 # local libraries
+import LocMath
 import LocUtil
+import Log
 import MakeNet
 import MaxFlow
 import NetPath
 
 if __name__ == '__main__':
     # constants
-    NUM_NET = 4
+    NUM_NET = 8
     N_NODE = 200
-    NUM_ESCILATION = 4
-    MAX_NUM_STREAM = 15
+    ESC_PER_NET = 8
+    MAX_NUM_STREAM = 16
     
-    RHO = 2.0
-    RAD = math.sqrt(N_NODE / RHO / math.pi)
+    RHO = 4.0
+    R = MakeNet.R(N_NODE, RHO)
+
+    DELAY = 3 * 60
 
     NUM_DIG_SEED = 3
 
@@ -32,19 +34,19 @@ if __name__ == '__main__':
     progStartTime = datetime.now()
 
     # parse args
-    fileName = "stream_saturate.log"
-    log = []
+    fileName = "test.log"
+    log = Log.Log(fileName, DELAY)
 
     for netNum in range(NUM_NET):
         # make network
         netSeed = LocUtil.SetSeed()
-        net = MakeNet.RandNetCirc(N_NODE, RAD, dir=True)
+        net = MakeNet.RandNetCirc(N_NODE, R, dir=True)
 
         subNet = NetPath.DomCompSubNet(net)
         nodeLoc,link = subNet
         nSubNet = len(nodeLoc)
 
-        for escNum in range(NUM_ESCILATION):
+        for escalation in range(ESC_PER_NET):
             streamSeed = LocUtil.SetSeed()
 
             temp = random.sample(range(nSubNet), 2 * MAX_NUM_STREAM)
@@ -55,27 +57,23 @@ if __name__ == '__main__':
 
             for numStream in range(1, MAX_NUM_STREAM + 1):
                 startTime = datetime.now()
-                maxFlow = MaxFlow.MaxFlowRate(subNet, stream[:numStream])
-                endTime = datetime.now()
+                try:
+                    maxFlow = MaxFlow.MaxFlowRate(subNet, stream[:numStream])
 
-                totalTime = (endTime - startTime).total_seconds()
+                    endTime = datetime.now()
+                    totalTime = (endTime - startTime).total_seconds()
 
-                maxFlowFrac = LocMath.RealToFrac(maxFlow)
-                maxFlowAdjust = maxFlowFrac.numerator / maxFlowFrac.denominator
-                agFlow = maxFlow * sum(streamDist[:numStream])
+                    maxFlowFrac = LocMath.RealToFrac(maxFlow)
+                    maxFlowAdjust = maxFlowFrac.numerator / maxFlowFrac.denominator
+                    agFlow = maxFlow * sum(streamDist[:numStream])
 
-                info = \
-                    [[N_NODE, RAD, netSeed, streamSeed],
-                     [numStream, maxFlowFrac, agFlow],
-                     totalTime]
-                log.append(info)
+                    info = \
+                        [[N_NODE, R, netSeed],
+                         [numStream, streamSeed, str(maxFlowFrac), agFlow],
+                         totalTime]
+                    log.Log(info)
 
-    with open(fileName, 'a') as file:
-        for info in log:
-            fracStr = str(info[1][1])
-            line = f'[{info[0]}, [{info[1][0]}, {fracStr}, {info[1][2]}], {info[2]}]\n'
-            file.write(line)
+                    print(f'{netNum}, {escalation}, {numStream}, {datetime.now() - progStartTime}')
 
-    # Report total time
-    progStopTime = datetime.now()
-    print(f'Total time: {progStopTime - progStartTime}')
+                except:
+                    print(f"{netNum}, {escalation}, {numStream}: Couldn't Solve")
