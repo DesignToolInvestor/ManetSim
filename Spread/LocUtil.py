@@ -153,3 +153,11 @@ def Group(func, list_):
     result.append(group)
 
     return result
+
+
+def MinIndex(list_):
+    minIndex = 0
+    for i in range(1, len(list_)):
+        if list_[i] < list_[minIndex]:
+            minIndex = i
+    return minIndex
