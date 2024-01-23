@@ -56,12 +56,12 @@ if __name__ == "__main__":
     NUM_NET = 300
 
     MIN_NET_SIZE = 30
-    MAX_NET_SIZE = 1_000
+    MAX_NET_SIZE = 3_000
 
-    DENSITY = [2]
+    DENSITY = [5]
 
-    FILE_NAME = 'geo_route.log'
-    DELAY = 3
+    FILE_NAME = 'geo_route_5.log'
+    DELAY = 30
 
     # open log
     log = Log.Log(FILE_NAME, DELAY)
@@ -79,13 +79,10 @@ if __name__ == "__main__":
             net = RandNetCirc(n,r)
 
             # pick random streams
-            nStream = round(math.sqrt(n))
-            temp = random.choices(range(n), k=2*nStream)
-            streamL = [[temp[2*k],temp[2*k+1]] for k in range(nStream)]
-
+            nStream = n
             numGood = 0
-            for stream in streamL:
-                source,sink = stream
+            for _ in range(nStream):
+                sink,source = random.choices(range(n), k=2)
                 if GeoMakeIt(net,source,sink):
                     numGood += 1
 
