@@ -40,7 +40,6 @@ class IndexPool:
                 self.poolIndex[poolEnd] = poolPos
             self.poolIndex[elemId] = -1
 
-
     def Pop(self) -> int:
         if len(self.pool) == 0:
             return None
@@ -49,10 +48,8 @@ class IndexPool:
             self.poolIndex[elemId] = -1
             return elemId
 
-
     def Len(self) -> int:
         return len(self.pool)
-
 
     def Active(self, index) -> bool:
         return (self.poolIndex[index] >= 0)

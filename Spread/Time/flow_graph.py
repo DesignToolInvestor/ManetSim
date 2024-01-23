@@ -69,4 +69,3 @@ if __name__ == '__main__':
 
     # save figure
     plot.savefig('flow_graph.png', dpi=200)
-    # plot.show()
