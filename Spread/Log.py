@@ -5,7 +5,6 @@
 # This is an object for writing log information to a file.
 
 from datetime import datetime
-from logging import info
 
 
 class Log(object):
@@ -20,7 +19,7 @@ class Log(object):
     def Log(self, line):
         self.buff.append(line)
         if (datetime.now() - self.lastDump).total_seconds() > self.delay:
-            with open(self.fileName, 'a') as file:
+            with open(self.fileName, mode='a') as file:
                 for line in self.buff:
                     file.write(f'{line}\n')
                 if self.trace:
@@ -30,7 +29,7 @@ class Log(object):
             self.lastDump = datetime.now()
 
     def __del__(self):
-        with open(self.fileName, 'a') as file:
+        with open(self.fileName, mode='a') as file:
             for line in self.buff:
                 file.write(f'{line}\n')
             if self.trace:
