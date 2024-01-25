@@ -51,6 +51,7 @@ if __name__ == '__main__':
     # TODO: clean up formatting
     # legend = f'{math.exp(intercept)} * n^{slope}'
     # plot.text(2e3, 2, legend)
+    # TODO: Automate the extraction of the value of rho
     plot.title(f'Geo-Routing (rho = {5})')
 
     # save figure
