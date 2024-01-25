@@ -1,24 +1,22 @@
 #
-# gen_rand.py
+# r a n d _ n e t . p y
 #
-# TODO:  Change the name of this file to be more meaningful.
-#
+
 # This program generates a random planer network of uniform density over a circular area.
 #
 # Call this as
-#   main <file_name> -n=<n> -r=<max_radius> -rho=<density> -seed=<seed>
+#   rand_net <file_name> -n=<n> -r=<max_radius> -rho=<density> -seed=<seed>
 
 # system libraries
 import argparse
-import math
 import random
 
 # local libraries
-import LocMath
-#import LocUtil
+import MakeNet
 import Net
 
 
+#######################################
 def ParseArgs():
     parser = argparse.ArgumentParser(
         prog='RandNetCirc',
@@ -26,44 +24,20 @@ def ParseArgs():
     )
 
     parser.add_argument('fileName', type=str)
-    parser.add_argument('-n', type=int)
+    parser.add_argument('-n', type=int, default=600)
     parser.add_argument('-r', type=float)
-    parser.add_argument('-rho', type=float)
+    parser.add_argument('-rho', type=float, default=2.0)
     parser.add_argument('-dir', type=bool, default=False)
     parser.add_argument('-seed', type=int)
 
     args = parser.parse_args()
 
-    if (args.n != None) and (args.r != None) and (args.rho != None):
-        raise Exception("Over specification of parameters")
-
-    if (args.n != None) and (args.r != None):
-        n = args.n
-        r = args.r
-        rho = math.pi * Sqr(r) / n
-
-    elif (args.n != None) and (args.rho != None):
-        n = args.n
-        rho = args.rho
-
-        area = n / rho
-        r = math.sqrt(area / math.pi)
-
-    elif (args.r != None) and (args.rho != None):
-        r = args.r
-        rho = args.rho
-
-        area = math.pi * Sqr(r)
-        n = math.round(area * rho)
-
-        area = n / rho
-        r = math.sqrt(area / math.pi)
-
-    else:
-        raise Exception("Under specification of parameters")
+    n,r,rho = MakeNet.ParseParams(args.n, args.r, args.rho)
 
     return [args.fileName, n, r, rho, args.dir, args.seed]
-    
+
+
+#######################################
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     SEED_LIM = 100_000
