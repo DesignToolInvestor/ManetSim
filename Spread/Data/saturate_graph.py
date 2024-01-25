@@ -10,7 +10,6 @@ import statistics
 
 # local packages
 import LocUtil
-import LocMath
 import MakeNet
 
 #######################################
@@ -41,17 +40,16 @@ def ParseArgs():
 
     # TODO:  Add argument for size of graph
     parser.add_argument('fileName', type=str)
+    parser.add_argument('-n', type=int)
+
     args = parser.parse_args()
 
-    return args.fileName
+    return [args.fileName, args.n]
 
 #######################################
 if __name__ == '__main__':
-    # constants
-    NET_SIZE = 400
-
     # parse command line
-    fileName = ParseArgs()
+    fileName,nSelect = ParseArgs()
 
     # read file
     with open(fileName, 'r') as file:
@@ -59,7 +57,7 @@ if __name__ == '__main__':
         logData = list(map(eval, lines))
 
     # select data
-    data = LocUtil.Select(lambda info: info[0][0] == NET_SIZE, logData)
+    data = LocUtil.Select(lambda info: info[0][0] == nSelect, logData)
     rho = list(
         map(lambda p: MakeNet.Rho(*p),
             map(lambda info: info[0][0:2], logData)))
@@ -69,19 +67,20 @@ if __name__ == '__main__':
     graphData = list(map(lambda info: [info[1][0], info[1][3]], data))
     nFlow,cap = LocUtil.UnZip(graphData)
 
-    # graph data
-    fig,ax = plot.subplots(figsize=(6.5, 6.5))
+    ###################################
+    # do first graph
+    fig,ax = plot.subplots(figsize=(9, 6.5))
     plot.plot(nFlow,cap, 'ro',markersize=4)
 
     # plot median
     groupData = LocUtil.Group(lambda p: p[0], graphData)
 
-    result = []
+    med = []
     for group in groupData:
         nStream,agFlow = LocUtil.UnZip(group)
-        result.append([nStream[0], statistics.median(agFlow)])
-    x,y = LocUtil.UnZip(result)
+        med.append([nStream[0], statistics.median(agFlow)])
 
+    x,y = LocUtil.UnZip(med)
     plot.plot(x,y, 'b')
 
     # median flow scale
@@ -93,8 +92,21 @@ if __name__ == '__main__':
     # labels and title
     ax.set_xlabel("Num of Stream")
     ax.set_ylabel("Aggregate Capacity")
-    ax.set_title(f'N = {NET_SIZE}; Rho = 2')
+    ax.set_title(f'N = {nSelect}; Rho = 2')
 
     # save figure
-    plot.savefig(f'flow_graph_{NET_SIZE}.png', dpi=200)
+    plot.savefig(f'flow_graph_A_{nSelect}.png', dpi=200)
+    plot.show()
+
+    ###################################
+    # do second graph
+    figInv, ax = plot.subplots(figsize=(6.5, 6.5))
+    x = list(map(lambda x: 1/x, nFlow))
+    plot.plot(x,cap, 'ro',markersize=4)
+
+    x,y = LocUtil.UnZip(med)
+    x = list(map(lambda x: 1/x, x))
+    plot.plot(x,y, 'b')
+
+    plot.savefig(f'flow_graph_B_{nSelect}.png', dpi=200)
     plot.show()
