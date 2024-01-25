@@ -4,6 +4,8 @@
 
 import random
 
+
+# TODO:  consider changing this to return an iterator rather than a list (might be faster)
 def Index(table, index):
     result = []
     for i in index:
