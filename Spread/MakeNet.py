@@ -26,6 +26,40 @@ def R(n, rho):
 
 
 #######################################
+# parse params
+def ParseParams(nArg, rArg, rhoArg):
+    if (nArg != None) and (rArg != None) and (rhoArg != None):
+        raise Exception("Over specification of parameters")
+
+    if (nArg != None) and (rArg != None):
+        n = nArg
+        r = rArg
+        rho = math.pi * Sqr(r) / n
+
+    elif (nArg != None) and (rhoArg != None):
+        n = nArg
+        rho = rhoArg
+
+        area = n / rho
+        r = math.sqrt(area / math.pi)
+
+    elif (rArg != None) and (rhoArg != None):
+        r = rArg
+        rho = rhoArg
+
+        area = math.pi * LocMath.Sqr(r)
+        n = round(area * rho)
+
+        area = n / rho
+        r = math.sqrt(area / math.pi)
+
+    else:
+        raise Exception("Under specification of parameters")
+
+    return (n,r,rho)
+
+
+#######################################
 # make random node locations
 def RandNodeCirc(n, maxRad) -> list[[float,float]]:
     result = []
