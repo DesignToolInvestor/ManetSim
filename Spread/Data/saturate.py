@@ -78,8 +78,9 @@ if __name__ == '__main__':
     # main loop
     progStartTime = datetime.now()
     
-    numNet = 0;
-    while ((datetime.now() - progStartTime).total_seconds() < duration):
+    numNet = 0
+    done = False
+    while not done:
         # make network
         netSeed = LocUtil.SetSeed()
         net = MakeNet.RandNetCirc(netSize, r, dir=True)
@@ -90,7 +91,8 @@ if __name__ == '__main__':
         nSubNet = len(nodeLoc)
 
         # do the escalations on this network
-        for escalation in range(escPerNet):
+        escalation = 0
+        while (escalation < escPerNet) and not done:
             streamSeed = LocUtil.SetSeed()
 
             stream = [random.sample(range(nSubNet), 2) for _ in range(maxNumStream)]
@@ -98,7 +100,8 @@ if __name__ == '__main__':
             streamDist = list(map(lambda vec: LocMath.Dist(vec[0],vec[1]), endLoc))
 
             # escalate the number of streams
-            for numStream in range(1, maxNumStream + 1):
+            numStream = 1;
+            while (numStream <= maxNumStream) and not done:
                 startTime = datetime.now()
                 try:
                     maxFlow = MaxFlow.MaxFlowRate(subNet, stream[:numStream])
@@ -115,10 +118,13 @@ if __name__ == '__main__':
                 line = Info2Line(
                     netSize,r,netSeed, numStream,streamSeed,maxFlowFrac,agFlow, solveTime)
                 log.Log(line)
-
                 print(f'{numNet}, {escalation}, {numStream}, {solveTime}, '
                       f' {datetime.now() - progStartTime}')
 
+                done = ((datetime.now() - progStartTime).total_seconds() < duration)
+
+                numStream += 1
+            escalation += 1
         numNet += 1
 
     # Need to explicitly delete the log, because automatic deletion sometimes takes down the file
