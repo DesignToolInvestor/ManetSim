@@ -181,49 +181,8 @@ def MaxFlowRate(net, stream):
     goal = cvxpy.Maximize(flowRate)
     prob = cvxpy.Problem(goal, constraints)
 
-    # endTime = datetime.now()
-    # elapsed = endTime - startTime
-
-    ###################################
-    # solve the problem
-
-    # startTime = datetime.now()
     prob.solve()
-    # endTime = datetime.now()
-    # elapsed = endTime - startTime
 
     if (prob.status != cvxpy.OPTIMAL):
-        raise Exception(f"Didn't solve: status = {prob.status}")
+        raise Exception("solver failure", prob.status)
     return flowRate.value
-
-
-###############################################################################
-# vestigials
-
-    ###########################
-    # set up the problem
-    # factors = []
-    # for streamId in range(nStream):
-    #     for linkNum in range(nLink):
-    #         factors.append(linkCost[linkNum] * linkRate[streamId][linkNum])
-    # goal = cvxpy.Minimize(sum(factors))
-
-    ###################################
-    # # print the solution
-    # PSUDO_EPS = 1e-8;
-    # N_COLUMN = 5;
-    #
-    # for streamId in range(nStream):
-    #     print(f'Stream {chr(streamId + 65)}:')
-    #     nActive = 0
-    #     for linkNum in range(nLink):
-    #         rate = linkRate[streamId][linkNum].value
-    #         if abs(rate) > PSUDO_EPS:
-    #             if (nActive % N_COLUMN) != 0:
-    #                 print(", ", end="")
-    #             nActive += 1
-    #             print(f'({linkNum}: {round(rate * 24)})', end="")
-    #             if (nActive % N_COLUMN) == 0:
-    #                 print()
-    #     if (nActive % N_COLUMN) != 0:
-    #         print()
