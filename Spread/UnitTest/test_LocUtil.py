@@ -59,3 +59,28 @@ class Test(TestCase):
         temp = [[[catLet[cat], d] for d in mask[cat]] for cat in range(N_CATEGORY)]
         answer = LocUtil.Select(lambda g: g != [], temp)
         self.assertEqual(result, answer)
+
+    def test_setSeed(self):
+        # define constants
+        numLoop = 10
+        minListSize = 5
+        maxListSize = 15
+        maxInt = 999
+
+        testSeed = None
+
+        # do tests
+        for k in range(numLoop):
+            seed = LocUtil.SetSeed(testSeed)
+
+            n0 = random.randint(minListSize, maxListSize - 1)
+            n1 = random.randint(minListSize, maxListSize - 1)
+            nMin = min(n0,n1)
+
+            LocUtil.SetSeed(seed)
+            list0 = [random.randint(0,maxInt) for _ in range(n0)]
+
+            LocUtil.SetSeed(seed)
+            list1 = [random.randint(0,maxInt) for _ in range(n1)]
+
+            self.assertEqual(list0[:nMin], list1[:nMin])
