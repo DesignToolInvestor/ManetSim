@@ -12,6 +12,7 @@ import math
 import os
 import random
 import time
+from multiprocessing import pool
 
 # local libraries
 import LocMath
@@ -21,18 +22,8 @@ import MakeNet
 import MaxFlow
 import NetPath
 
-# constants
-sleepTime = 0.1
-
-###########################################################
-def Info2Line(nNode, rho, netSeed, numStream, streamSeed, flowFrac, agFlow, time):
-    netInfo = f'[{nNode}, {rho} ,{netSeed}]'
-    streamInfo = \
-        f'[{numStream}, {streamSeed}, {flowFrac.numerator}/{flowFrac.denominator}, {agFlow}]'
-    result = f'[{netInfo}, {streamInfo}, {time}]'
-
-    return result
-
+# global variable
+progStartTime = datetime.now()
 
 ###########################################################
 def ParseArgs():
@@ -74,38 +65,134 @@ def ParseArgs():
 
 
 ###########################################################
-def MaxFlowTask(net,stream,taskInfo):
-    maxFlow = MaxFlow.MaxFlowRate(net,stream)
-    return [maxFlow, taskInfo]
+def Info2Line(netSize, rho, netSeed, nStream, strSeed, flowFrac, cumDist, time):
+    netInfo = f'[{netSize}, {rho}, {netSeed}]'
+    streamInfo = \
+        f'[{nStream}, {strSeed}, {flowFrac.numerator}/{flowFrac.denominator}, {cumDist}]'
+    result = f'[{netInfo}, {streamInfo}, {time}]'
+
+    return result
 
 
-def StartTask(subNet, stream, proc, taskInfo):
+###########################################################
+# This function returns a task-result if successful and the list [solver-status, time] if the
+# solver failed.
+def Task(taskInfo):
+    [netSize, rho, netSeed], [nStream, strSeed] = taskInfo
+    
+    # make network
+    LocUtil.SetSeed(netSeed)
+    r = MakeNet.R(netSize, rho)
+    net = MakeNet.RandNetCirc(netSize, r, dir=True)
+
+    # extract the dominant subnet as a network
+    subNet = NetPath.DomCompSubNet(net)
+    nodeLoc, link = subNet
+    nSubNet = len(nodeLoc)
+
+    # select streams
+    LocUtil.SetSeed(strSeed)
+    stream = [random.sample(range(nSubNet), 2) for _ in range(nStream)]
+
+    # call MaxFlowRate and catch solver error
+    startTime = datetime.now()
+    try:
+        maxFlow = MaxFlow.MaxFlowRate(subNet, stream)
+        timeSec = (datetime.now() - startTime).total_seconds()
+        
+    except Exception as exception:
+        if exception.args[0] == 'solver failure':
+            timeSec = (datetime.now() - startTime).total_seconds()
+            return [exception.args[1], timeSec]
+        else:
+            raise Exception("solver failure") from exception
+        
+    else:
+        maxFlowFrac = LocMath.RealToFrac(maxFlow)
+
+        endLoc = LocUtil.Index(nodeLoc, stream)
+        cumDist = sum(map(lambda vec: LocMath.Dist(vec[0], vec[1]), endLoc))
+
+        return [[netSize,rho,netSeed], [nStream,strSeed], [maxFlowFrac,cumDist, timeSec]]
+
+
+###########################################################
+# TODO:  replace busy wait with IPC about which process is finishing
+def StartTask(taskInfo, proc):
+    # constants
+    sleepTime = 0.1
+    
     # wait for free proc
-    # TODO:  replace busy wait with IPC about which process is finishing
-    procId = 0
-    while (procId < len(proc)) and ((proc[procId] is None) or (not proc[procId].done())):
-        procId += 1
-
-    while procId is len(proc):
+    procId = LocUtil.IndexOfFirst(lambda info: (info is None) or info.done(), proc)
+    while procId is None:
         time.sleep(sleepTime)
-
-        procId = 0
-        while (procId < len(proc)) and ((proc[procId] is None) or (not proc[procId].done())):
-            procId += 1
+        procId = LocUtil.IndexOfFirst(lambda info: (info is None) or info.done(), proc)
 
     # get results
     if proc[procId] is not None:
         taskResult = proc[procId].result()
+
+        netSeed = taskResult[0][2]
+        nStream = taskResult[1][0]
+        timeSec = taskResult[2][2]
+        totalTime = datetime.now() - progStartTime
+        print(f'{totalTime}:  Completed task ({netSeed}, {nStream}) on proc {procId} '
+              f'in {timeSec} seconds')
+
     else:
         taskResult = None
 
-    # start next task
-    proc[procId] = pool.submit(MaxFlowTask, subNet, stream, taskInfo)
-    print(f'Start task {taskInfo} on proc {procId}')
+    # start new task
+    proc[procId] = pool.submit(Task, taskInfo)
+
+    netSeed = taskInfo[0][2]
+    nStream = taskInfo[1][0]
+    print(f'Start task ({netSeed}. {nStream}) on proc {procId}')
 
     return taskResult
 
 
+###########################################################
+def DrainTask(proc):
+    # constants
+    sleepTime = 0.1
+
+    # look for done tasks
+    procId = LocUtil.IndexOfFirst(lambda info: (info is not None) and info.done(), proc)
+    while procId is None:
+        time.sleep(sleepTime)
+        procId = LocUtil.IndexOfFirst(lambda info: (info is not None) and info.done(), proc)
+
+    # get results
+    # TODO:  fix code reuse issue
+    taskResult = proc[procId].result()
+    netSeed = taskResult[0][2]
+    nStream = taskResult[1][0]
+    timeSec = taskResult[2][2]
+
+    totalTime = datetime.now() - progStartTime
+    print(f'{totalTime}:  Completed task ({netSeed}, {nStream}) on proc {procId} '
+          f'in {timeSec} seconds')
+    
+    # remove entry from process table
+    proc[procId] = None
+
+    return taskResult
+
+
+###########################################################
+def ProcessResults(taskResult, log):
+    if (isinstance(taskResult,list) and (len(taskResult) == 2) and
+        isinstance(taskResult[0],str) and isinstance(taskResult[1],float)):
+        print(f'{datetime.now() - progStartTime}: fail')
+
+    elif taskResult is not None:
+        [netSize, rho, netSeed], [nStream, strSeed], [maxFlowFrac, cumDist, timeSec] = taskResult
+
+        line = Info2Line(netSize, rho, netSeed, nStream, strSeed, maxFlowFrac, cumDist, timeSec)
+        log.Log(line)
+
+    
 ###########################################################
 if __name__ == '__main__':
     # constants
@@ -114,6 +201,12 @@ if __name__ == '__main__':
     logDelay = 60
     numSeedDig = 3
 
+    masterSeed = None
+    # masterSeed = 26
+
+    # start clock
+    # progStartTime = datetime.now()
+    
     # parse args
     fileName,duration, netSize,r,rho, nProc = ParseArgs()
     maxNumStream = round(math.sqrt(netSize))
@@ -122,84 +215,41 @@ if __name__ == '__main__':
     log = Log.Log(fileName, logDelay)
 
     # main loop
-    # TODO:  This is very poorly structured code
-    progStartTime = datetime.now()
+    masterSeed = LocUtil.SetSeed(masterSeed, digits=numSeedDig)
+    print(f'master masterSeed = {masterSeed}')
 
     proc = [None for _ in range(nProc)]
-    with (futures.ProcessPoolExecutor(max_workers=nProc) as pool):
-        numNet = 0
-        while ((datetime.now() - progStartTime).total_seconds() < duration):
-            # make network
-            netSeed = LocUtil.SetSeed()
-            net = MakeNet.RandNetCirc(netSize, r, dir=True)
 
-            # extract the dominant subnet as a network
-            subNet = NetPath.DomCompSubNet(net)
-            nodeLoc, link = subNet
-            nSubNet = len(nodeLoc)
+    with futures.ProcessPoolExecutor(max_workers=nProc) as pool:
+        netNum = 0
+        done = False
 
-            # do the escalations on this network
-            for escalation in range(escPerNet):
-                streamSeed = LocUtil.SetSeed()
+        while netNum < 1:
+            netSeed = random.randint(0, 10**numSeedDig - 1)
+            netTask = [netSize,rho,netSeed]
+            
+            escNum = 0
+            while (escNum < escPerNet) and not done:
+                strSeed = random.randint(0, 10**numSeedDig - 1)
+                
+                nStream = 1
+                while (nStream <= maxNumStream) and not done:
+                    taskInfo = [netTask, [nStream, strSeed]]
+                    taskResult = StartTask(taskInfo, proc)
+                    
+                    ProcessResults(taskResult, log)
+                    # done = ((datetime.now() - progStartTime).total_seconds() > duration)
 
-                stream = [random.sample(range(nSubNet), 2) for _ in range(maxNumStream)]
-                endLoc = LocUtil.Index(nodeLoc, stream)
-                streamDist = list(map(lambda vec: LocMath.Dist(vec[0], vec[1]), endLoc))
-
-                # escalate the number of streams
-                for numStream in range(1, maxNumStream + 1):
-                    startTime = datetime.now()
-                    try:
-                        taskStream = stream[:numStream]
-                        taskInfo = [[netSize,rho,netSeed], [taskStream,streamSeed]]
-                        [maxFlow,solveTime],taskInfo = StartTask(subNet, str, proc, taskInfo)
-                    except:
-                        print(f"{numNet}, {escalation}, {numStream}: Couldn't Solve")
-                        break
-
-                    # stuff extracted from taskInfo
-                    maxFlowFrac = LocMath.RealToFrac(maxFlow)
-
-                    # all for lost tasks
-                    [netSize,rho,netSeed], [taskStream,streamSeed] = taskInfo
-                    nStream = len(taskStream)
-                    agFlow = maxFlow * sum(LocUtil.Index(streamDist, taskStream))
-
-                    line = Info2Line(
-                        netSize, rho, netSeed, nStream, streamSeed, maxFlowFrac, agFlow,
-                        solveTime)
-                    log.Log(line)
-
-                    print(f'{numNet}, {escalation}, {numStream}, {solveTime}, '
-                          f' {datetime.now() - progStartTime}')
-
-        numNet += 1
+                    nStream += 1
+                escNum += 1
+            netNum += 1
 
     # wait for all the processes to finish
-    done = all(((p is None) or p.done()) for p in proc)
+    done = all((p is None) for p in proc)
     while not done:
-        for k in range(nProc):
-            if (proc[k] is not None) and proc[k].done():
-                [maxFlow,solveTime],taskInfo = proc[k].result()
+        taskResult = DrainTask(proc)
+        ProcessResults(taskResult, log)
 
-                maxFlowFrac = LocMath.RealToFrac(maxFlow)
+        done = all((p is None) for p in proc)
 
-                # all for lost tasks
-                [netSize, rho, netSeed], [taskStream, streamSeed] = taskInfo
-                nStream = len(taskStream)
-                agFlow = maxFlow * sum(LocUtil.Index(streamDist, taskStream))
-
-                line = Info2Line(
-                    netSize, rho, netSeed, nStream, streamSeed, maxFlowFrac, agFlow,
-                    solveTime)
-                log.Log(line)
-
-                print(f'{numNet}, {escalation}, {numStream}, {solveTime}, '
-                      f' {datetime.now() - progStartTime}')
-
-        time.sleep(sleepTime)
-
-    # Need to explicitly delete the log, because automatic deletion sometimes takes down the file
-    # system before calling the delete method on Log.  Because the deletion flushes the buffer
-    # this can cause a crash.
-    del Log
+    log.Flush()
