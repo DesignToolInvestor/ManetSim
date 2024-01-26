@@ -47,6 +47,7 @@ def RandLog(min, max):
 
 # This is using a continued fraction expansion
 # TODO:  create 2 pages in the programing manual with a proof of why this works
+# TODO:  create level 1 unit test
 def RealToFrac(num, eps=1e-6):
     whole = []
     while abs(num) > eps:
@@ -57,6 +58,6 @@ def RealToFrac(num, eps=1e-6):
 
     result = Frac(1, whole[len(whole) - 1])
     for k in range(len(whole) - 2, -1, -1):
-        result = Frac(1, 1 + result)
+        result = Frac(1, whole[k] + result)
 
     return result
