@@ -34,18 +34,14 @@ def UnZip(zip):
     return (x,y)
 
 
-# Not completed; doesn't work
-def PointToXY(pointLines):
-    map(lambda line: UnZip(line), pointLines)
-
-    return []
-
-
-def SetSeed(seed = None, digits = 5):
-    MAX_SEED = 10**digits - 1
+def SetSeed(seed=None, digits=5):
     if seed == None:
         random.seed()
-        seed = random.randint(0, MAX_SEED)
+        maxSeed = 10 ** digits - 1
+        seed = random.randint(0, maxSeed)
+
+    random.seed(seed)
+
     return seed
 
 
@@ -163,3 +159,10 @@ def MinIndex(list_):
         if list_[i] < list_[minIndex]:
             minIndex = i
     return minIndex
+
+def IndexOfFirst(func, list_):
+    for i in range(len(list_)):
+        if func(list_[i]):
+            return i
+
+    return None
