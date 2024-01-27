@@ -117,6 +117,12 @@ def Task(taskInfo):
 
 
 ###########################################################
+def IsFailTyep(obj):
+    return \
+        (isinstance(obj, list) and (len(obj) == 2) and
+
+
+###########################################################
 # TODO:  replace busy wait with IPC about which process is finishing
 def StartTask(taskInfo, proc):
     # constants
@@ -129,18 +135,20 @@ def StartTask(taskInfo, proc):
         procId = LocUtil.IndexOfFirst(lambda info: (info is None) or info.done(), proc)
 
     # get results
-    if proc[procId] is not None:
+    if proc[procId] is None:
+        taskResult = None
+    else:
         taskResult = proc[procId].result()
 
-        netSeed = taskResult[0][2]
-        nStream = taskResult[1][0]
-        timeSec = taskResult[2][2]
-        totalTime = datetime.now() - progStartTime
-        print(f'{totalTime}:  Completed task ({netSeed}, {nStream}) on proc {procId} '
-              f'in {timeSec} seconds')
-
-    else:
-        taskResult = None
+        if IsFailTyep(taskResult):
+            taskResult = None
+        else:
+            netSeed = taskResult[0][2]
+            nStream = taskResult[1][0]
+            timeSec = taskResult[2][2]
+            totalTime = datetime.now() - progStartTime
+            print(f'{totalTime}:  Completed task ({netSeed}, {nStream}) on proc {procId} '
+                  f'in {timeSec} seconds')
 
     # start new task
     proc[procId] = pool.submit(Task, taskInfo)
@@ -180,10 +188,9 @@ def DrainTask(proc):
     return taskResult
 
 
-###########################################################
+###############################
 def ProcessResults(taskResult, log):
-    if (isinstance(taskResult,list) and (len(taskResult) == 2) and
-        isinstance(taskResult[0],str) and isinstance(taskResult[1],float)):
+    if IsFailTyep(taskResult):
         print(f'{datetime.now() - progStartTime}: fail')
 
     elif taskResult is not None:
@@ -199,7 +206,7 @@ if __name__ == '__main__':
     escPerNet = 1
 
     logDelay = 60
-    numSeedDig = 3
+    numSeedDig = 5
 
     masterSeed = None
     # masterSeed = 26
@@ -224,7 +231,7 @@ if __name__ == '__main__':
         netNum = 0
         done = False
 
-        while netNum < 1:
+        while not done:
             netSeed = random.randint(0, 10**numSeedDig - 1)
             netTask = [netSize,rho,netSeed]
             
@@ -238,7 +245,7 @@ if __name__ == '__main__':
                     taskResult = StartTask(taskInfo, proc)
                     
                     ProcessResults(taskResult, log)
-                    # done = ((datetime.now() - progStartTime).total_seconds() > duration)
+                    done = ((datetime.now() - progStartTime).total_seconds() > duration)
 
                     nStream += 1
                 escNum += 1
