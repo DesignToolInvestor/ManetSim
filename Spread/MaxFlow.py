@@ -3,7 +3,6 @@
 #
 
 import cvxpy
-import cvxpy
 from datetime import datetime
 
 import LocMath
