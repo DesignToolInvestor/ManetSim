@@ -120,7 +120,7 @@ def Task(taskInfo):
 def IsFailTyep(obj):
     return \
         (isinstance(obj, list) and (len(obj) == 2) and
-
+         (isinstance(obj[0], str) and isinstance(obj[1], float)))
 
 ###########################################################
 # TODO:  replace busy wait with IPC about which process is finishing
