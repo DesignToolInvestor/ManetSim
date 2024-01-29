@@ -203,7 +203,7 @@ def ProcessResults(taskResult, log):
 ###########################################################
 if __name__ == '__main__':
     # constants
-    escPerNet = 1
+    escPerNet = 2
 
     logDelay = 60
     numSeedDig = 5
@@ -211,14 +211,12 @@ if __name__ == '__main__':
     masterSeed = None
     # masterSeed = 26
 
-    # start clock
-    # progStartTime = datetime.now()
-    
     # parse args
     fileName,duration, netSize,r,rho, nProc = ParseArgs()
-    maxNumStream = round(math.sqrt(netSize))
+    # maxNumStream = round(math.sqrt(netSize))
+    maxNumStream = 12
 
-    # creat log
+    # create log
     log = Log.Log(fileName, logDelay)
 
     # main loop
