@@ -13,7 +13,7 @@ def FuncWrapper(taskFunc, que, procId, taskId, funcArgs):
 
 
 class TaskFarm(object):
-    def __init__(self, taskFunc, numProc=cpu_count()):
+    def __init__(self, taskFunc, numProc = cpu_count() - 1):
         self.numProc = numProc
         self.taskFunc = taskFunc
         self.procTab = [None for _ in range(numProc)]
@@ -35,6 +35,7 @@ class TaskFarm(object):
         return all(map(lambda pTab: pTab == None, self.procTab))
 
 
+    # TODO: deal with funcArgs being ither a list or an element
     def StartTask(self, taskId, funcArgs):
         # get free process
         procId = self.FreeProc()
