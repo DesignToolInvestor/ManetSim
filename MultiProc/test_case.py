@@ -2,7 +2,6 @@
 # t e s t _ c a s e . p y
 #
 
-from multiprocessing import Queue, Process
 from math import sqrt, floor
 import sys
 
@@ -74,15 +73,15 @@ if __name__ == '__main__':
     # collect results from running tasks
     taskResult = taskFarm.DrainTask()
     while taskResult != None:
-        taskResult = taskFarm.DrainTask()
-        if taskResult != None:
-            res,taskId = taskResult
-            [oldCycle, oldJob] = taskId
-            resIndex = oldCycle * numProc + oldJob
-            result[resIndex] = res
+        res,taskId = taskResult
+        [oldCycle, oldJob] = taskId
+        resIndex = oldCycle * numProc + oldJob
+        result[resIndex] = res
 
-            print(f'{taskId} is done')
-            print(f'result[{resIndex}] = {res}')
+        print(f'{taskId} is done')
+        print(f'result[{resIndex}] = {res}')
+
+        taskResult = taskFarm.DrainTask()
 
     # "check" result
     print(result)
