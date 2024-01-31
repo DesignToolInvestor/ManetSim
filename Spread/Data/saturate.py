@@ -207,10 +207,9 @@ if __name__ == '__main__':
     escPerNet = 2
 
     logDelay = 60
-    numSeedDig = 5
 
+    numSeedDig = 5
     masterSeed = None
-    # masterSeed = 26
 
     # parse args
     fileName,duration, netSize,r,rho, nProc = ParseArgs()
