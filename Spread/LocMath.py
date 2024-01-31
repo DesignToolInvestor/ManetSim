@@ -45,6 +45,7 @@ def RandLog(min, max):
     return math.exp(random.uniform(math.log(min), math.log(max)))
 
 
+#######################################
 def RoundRem(num):
     whole = round(num)
     rem = num - whole
@@ -64,6 +65,7 @@ def ContFrac(numer):
 
 # This is using a continued fraction expansion
 # TODO:  create 2 pages in the programing manual with a proof of why this works
+# TODO:  Do a cleaner job of dealing with the end cases
 def RealToFrac(num, eps=1e-6):
     numWhole,rem = RoundRem(num)
     diff = rem
@@ -76,4 +78,7 @@ def RealToFrac(num, eps=1e-6):
         approx = numWhole + ContFrac(whole)
         diff = num - approx
 
-    return numWhole + ContFrac(whole)
+    if whole == []:
+        return numWhole
+    else:
+        return numWhole + ContFrac(whole)
