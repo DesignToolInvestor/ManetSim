@@ -214,7 +214,8 @@ if __name__ == '__main__':
     # parse args
     fileName,duration, netSize,r,rho, nProc = ParseArgs()
     # maxNumStream = round(math.sqrt(netSize))
-    maxNumStream = 12
+    minNumStream = 13
+    maxNumStream = 16
 
     # create log
     log = Log.Log(fileName, logDelay)
@@ -237,7 +238,7 @@ if __name__ == '__main__':
             while (escNum < escPerNet) and not done:
                 strSeed = random.randint(0, 10**numSeedDig - 1)
                 
-                nStream = 1
+                nStream = minNumStream
                 while (nStream <= maxNumStream) and not done:
                     taskInfo = [netTask, [nStream, strSeed]]
                     taskResult = StartTask(taskInfo, proc)
