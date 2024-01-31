@@ -9,7 +9,6 @@ import random
 import LocMath
 import LocUtil
 
-
 class Test(TestCase):
     def test_RealToTest(self):
         # constants
