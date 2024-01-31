@@ -15,10 +15,6 @@ import MakeNet
 
 #######################################
 # graphing functions
-# def GraphData():
-
-# def GraphMed():
-
 def AddMedFlowScale(ax, medFlowLen, maxNumStream, maxCap):
     axAlt = ax.secondary_yaxis(
         location='right', functions=(lambda c: c / medFlowLen, lambda s: s * medFlowLen))
@@ -62,6 +58,8 @@ if __name__ == '__main__':
 
     # select data
     data = LocUtil.Select(lambda info: info[0][0] == nSelect, logData)
+
+    # TODO:  Add check that result is not empty
     rho = list(
         map(lambda p: MakeNet.Rho(*p),
             map(lambda info: info[0][0:2], logData)))

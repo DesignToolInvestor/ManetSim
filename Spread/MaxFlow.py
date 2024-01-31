@@ -17,7 +17,7 @@ def LinkCostHelper(net, Metric):
     result = []
 
     for link in linkL:
-        dist = Metric(NodeLoc[link[0]], NodeLoc[link[1]])
+        dist = Metric(nodeL[link[0]], nodeL[link[1]])
         result.append(dist)
 
     return result
@@ -180,6 +180,7 @@ def MaxFlowRate(net, stream):
     goal = cvxpy.Maximize(flowRate)
     prob = cvxpy.Problem(goal, constraints)
 
+    # TODO:  switch to sovler=cvxpy.CLARABEL
     prob.solve()
 
     if (prob.status != cvxpy.OPTIMAL):

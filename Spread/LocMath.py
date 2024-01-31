@@ -45,19 +45,40 @@ def RandLog(min, max):
     return math.exp(random.uniform(math.log(min), math.log(max)))
 
 
-# This is using a continued fraction expansion
-# TODO:  create 2 pages in the programing manual with a proof of why this works
-# TODO:  create level 1 unit test
-def RealToFrac(num, eps=1e-6):
-    whole = []
-    while abs(num) > eps:
-        num = 1 / num
-        lastWhole = round(num)
-        whole.append(lastWhole)
-        num -= lastWhole
+#######################################
+def RoundRem(num):
+    whole = round(num)
+    rem = num - whole
 
-    result = Frac(1, whole[len(whole) - 1])
-    for k in range(len(whole) - 2, -1, -1):
-        result = Frac(1, whole[k] + result)
+    return [whole,rem]
+
+
+def ContFrac(numer):
+    n = len(numer)
+
+    result = Frac(1, numer[n-1])
+    for i in range(n-2, -1, -1):
+        result = 1 / (numer[i] + result)
 
     return result
+
+
+# This is using a continued fraction expansion
+# TODO:  create 2 pages in the programing manual with a proof of why this works
+# TODO:  Do a cleaner job of dealing with the end cases
+def RealToFrac(num, eps=1e-6):
+    numWhole,rem = RoundRem(num)
+    diff = rem
+
+    whole = []
+    while abs(diff) > num*eps:
+        w,rem = RoundRem(1/rem)
+        whole.append(w)
+
+        approx = numWhole + ContFrac(whole)
+        diff = num - approx
+
+    if whole == []:
+        return numWhole
+    else:
+        return numWhole + ContFrac(whole)
