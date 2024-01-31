@@ -13,10 +13,10 @@ def FuncWrapper(taskFunc, que, procId, taskId, funcArgs):
 
 
 class TaskFarm(object):
-    def __init__(self, taskFunc, numProc = cpu_count() - 1):
-        self.numProc = numProc
+    def __init__(self, taskFunc, numProc=None):
+        self.numProc = numProc if numProc is not None else cpu_count() - 1
         self.taskFunc = taskFunc
-        self.procTab = [None for _ in range(numProc)]
+        self.procTab = [None for _ in range(self.numProc)]
         self.que = Queue()
 
 
