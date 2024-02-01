@@ -120,6 +120,7 @@ def ProcessResults(taskResult, log):
 
     elif taskResult is not None:
         taskInfo, taskId = taskResult
+        # TODO:  sometimes dies at this point ... probably IsFailType isn't working
         [netSize,rho,netSeed], [nStream,streamSeed], [maxFlowFrac,cumDist,timeSec] = taskInfo
 
         line = Info2Line(netSize, rho, netSeed, nStream, streamSeed, maxFlowFrac, cumDist, timeSec)
