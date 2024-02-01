@@ -84,3 +84,12 @@ class Test(TestCase):
             list1 = [random.randint(0,maxInt) for _ in range(n1)]
 
             self.assertEqual(list0[:nMin], list1[:nMin])
+
+    def test_Partition(self):
+        num = [15, 35, 95, 89, 23, 99, 59, 43, 14, 66, 50, 58]
+
+        isPrime = lambda n: not any((n % i) == 0 for i in range(2,n))
+        prime,notPrime = LocUtil.Partition(isPrime, num)
+
+        self.assertEqual(prime, [89, 23, 59, 43])
+        self.assertEqual(notPrime, [15, 35, 95, 99, 14, 66, 50, 58])
