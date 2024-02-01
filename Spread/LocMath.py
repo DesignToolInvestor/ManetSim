@@ -8,6 +8,9 @@ from fractions import Fraction as Frac
 import math
 import random
 
+import LocUtil
+
+
 def Sqr(num):
     return num*num
 
@@ -82,3 +85,43 @@ def RealToFrac(num, eps=1e-6):
         return numWhole
     else:
         return numWhole + ContFrac(whole)
+
+
+def LogRange(low,high, majicNum):
+    logMajicNum = [math.log10(num) for num in majicNum]
+    
+    lowDec,logLowFrac = divmod(math.log10(low), 1)
+    highDec,logHighFrac = divmod(math.log10(high), 1)
+
+    lowIndex = LocUtil.MinIndex([abs(majic - logLowFrac) for majic in logMajicNum])
+    highIndex = LocUtil.MinIndex([abs(majic - logHighFrac) for majic in logMajicNum])
+
+    result = []
+    decade = lowDec
+    majicIndex = lowIndex
+
+    # tricky logic
+    while not ((highDec < decade) or ((decade == highDec) and (highIndex < majicIndex))):
+        result.append(majicNum[majicIndex] * 10**decade)
+
+        if majicIndex < len(majicNum) - 1:
+            majicIndex += 1
+        else:
+            majicIndex = 0
+            decade += 1
+
+    return result
+
+
+def IsClose(a,b, rel_tol=1e-09, abs_tol=0.0):
+    aLen = len(a)
+    if (aLen != len(b)):
+        return False
+    else:
+        close = math.isclose(a[0],b[0], rel_tol=rel_tol, abs_tol=abs_tol)
+        i = 0
+        while close and (i < aLen):
+            close = math.isclose(a[i],b[i], rel_tol=rel_tol, abs_tol=abs_tol)
+            i += 1
+
+        return close
