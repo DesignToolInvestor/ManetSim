@@ -108,7 +108,7 @@ def Task(taskInfo):
             raise Exception("solver failure") from exception
         
     else:
-        maxFlowFrac = LocMath.RealToFrac(maxFlow)
+        maxFlowFrac = LocMath.RealToFrac(float(maxFlow))
 
         endLoc = LocUtil.Index(nodeLoc, stream)
         cumDist = sum(map(lambda vec: LocMath.Dist(vec[0], vec[1]), endLoc))
