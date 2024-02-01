@@ -180,8 +180,11 @@ def MaxFlowRate(net, stream):
     goal = cvxpy.Maximize(flowRate)
     prob = cvxpy.Problem(goal, constraints)
 
-    # TODO:  switch to sovler=cvxpy.CLARABEL
-    prob.solve()
+    # ECOS is roughly the same speed as CLARABEL (0.5% slower on simple problems and about 2%
+    # faster on hard problems), but it is more robust.  That is, it fails about 1 in 500, while
+    # CLARABEL fails about 1 in 50.
+    prob.solve(solver=cvxpy.ECOS)
+    # prob.solve(solver=cvxpy.CLARABEL)
 
     if (prob.status != cvxpy.OPTIMAL):
         raise Exception("solver failure", prob.status)
