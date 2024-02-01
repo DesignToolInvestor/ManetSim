@@ -9,6 +9,7 @@ import math
 import statistics
 from scipy import optimize, stats
 
+import LocMath
 # local packages
 from LocUtil import Select, Grid1, Group, UnZip
 import MakeNet
@@ -125,11 +126,13 @@ if __name__ == '__main__':
 
     # add tick marks
     # TODO:  automate this
-    xTick = [30,50,100,200,300,500]
+    tickNum = [1,2,3,5]
+
+    xTick = LocMath.LogRange(min(xL),max(xL), tickNum)
     xTickStr = list(map(str, xTick))
     plot.xticks(ticks=xTick, labels=xTickStr)
 
-    yTick = [2,3,5,10,20,30]
+    yTick = LocMath.LogRange(min(yL),max(yL), tickNum)
     yTickStr = list(map(str, yTick))
     plot.yticks(ticks=yTick, labels=yTickStr)
 
