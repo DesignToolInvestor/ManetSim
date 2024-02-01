@@ -25,3 +25,20 @@ class Test(TestCase):
             diff = real - float(frac)
 
             self.assertTrue(abs(diff) < 1e6, f'seed was {seed}')
+
+
+    def test_IsClose(self):
+        list0 = [1,2,3,4,5,6]
+        list1 = [1.000_001, 1.999_999, 3.000_002, 3.999_998, 5.000_003, 5.999_997]
+        self.assertTrue(LocMath.IsClose(list0, list1, 1e-5))
+
+
+    def test_LogRange(self):
+        result = LocMath.LogRange(2.9, 49, [1,2,3,5])
+        self.assertTrue(LocMath.IsClose(result, [3.0, 5.0, 10.0, 20.0, 30.0, 50.0]))
+
+        result = LocMath.LogRange(1.1, 31, [1,2,3,5])
+        self.assertTrue(LocMath.IsClose(result, [1.0, 2.0, 3.0, 5.0, 10.0, 20.0, 30.0]))
+
+        result = LocMath.LogRange(0.06, 1.5, [1,2,3,5])
+        self.assertTrue(LocMath.IsClose(result, [0.05, 0.1, 0.2, 0.3, 0.5, 1.0, 2.0]))
