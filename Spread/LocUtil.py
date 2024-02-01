@@ -131,7 +131,19 @@ def Unique(list_):
             prev = elem
     
     return result
-    
+
+
+def Partition(func, list_):
+    trueL = []
+    falseL = []
+    for elem in list_:
+        if func(elem):
+            trueL.append(elem)
+        else:
+            falseL.append(elem)
+
+    return (trueL, falseL)
+
 def Group(func, list_):
     sortList = sorted(list_.copy(), key=func)
 
