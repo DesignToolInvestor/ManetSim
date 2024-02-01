@@ -42,3 +42,22 @@ class Test(TestCase):
 
         result = LocMath.LogRange(0.06, 1.5, [1,2,3,5])
         self.assertTrue(LocMath.IsClose(result, [0.05, 0.1, 0.2, 0.3, 0.5, 1.0, 2.0]))
+
+
+    def test_Wrap(self):
+        # constants
+        listLen = 10
+
+        # set seed
+        seed = None
+        seed = LocUtil.SetSeed(seed)
+
+        # setup list
+        list_ = [random.random() for _ in range(listLen)]
+        rem = [v % 1 for v in list_]
+        truth = [r if r < 0.5 else r - 1 for r in rem]
+
+        # do test
+        result = LocMath.Wrap(list_, -0.5, 0.5)
+
+        self.assertTrue(LocMath.IsClose(truth, result), f'Seed = {seed}')
