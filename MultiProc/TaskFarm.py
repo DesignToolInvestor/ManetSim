@@ -9,7 +9,6 @@ from os import cpu_count
 def FuncWrapper(taskFunc, que, procId, taskId, funcArgs):
     result = taskFunc(*funcArgs)
     que.put([procId, [result, taskId]])
-    print(f'Message {[procId, [result, taskId]]}')
 
 
 class TaskFarm(object):
