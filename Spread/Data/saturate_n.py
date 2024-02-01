@@ -1,5 +1,5 @@
 #
-# s a t u r a t e _ v a r y _ n . p y
+# s a t u r a t e _ n . p y
 #
 
 # This script will increase the number of streams passed the point of saturating aggregate flow.
@@ -19,9 +19,9 @@ import MaxFlow
 import NetPath
 import TaskFarm
 
+# TODO:  Make this a local variable
 # global variable
 progStartTime = datetime.now()
-
 
 ###########################################################
 def ParseArgs():
@@ -33,7 +33,7 @@ def ParseArgs():
     # setup
     parser.add_argument('fileName', type=str)
     parser.add_argument('nRange', type=str)
-    parser.add_argument('rho', type=float)
+    parser.add_argument('rho', type=str)
     parser.add_argument('delta', type=str)
 
     parser.add_argument('-nProc', type=int, default=None)
@@ -41,8 +41,9 @@ def ParseArgs():
     # core parse
     args = parser.parse_args()
 
-    # nRange
+    # nRange and rho
     nRange = eval(args.nRange)
+    rho = eval(args.rho)
 
     # convert duration argument
     asDate = datetime.strptime(args.delta, "%H:%M:%S")
@@ -50,7 +51,7 @@ def ParseArgs():
     asSec = asDelta.total_seconds()
 
     # return result
-    return [args.fileName, nRange, args.rho, asSec, args.nProc]
+    return [args.fileName, nRange, rho, asSec, args.nProc]
 
 
 ###########################################################
@@ -108,23 +109,26 @@ def Info2Line(netSize, rho, netSeed, nStream, streamSeed, flowFrac, cumDist, tim
 
 ###############################
 def IsFailTyep(obj):
-    return \
-        (isinstance(obj, list) and (len(obj) == 2) and
-         (isinstance(obj[0], str) and isinstance(obj[1], float)))
+    return (isinstance(obj, list) and (len(obj) == 2) and
+            isinstance(obj[0], str) and isinstance(obj[1], float))
 
 
 ###############################
-def ProcessResults(taskResult, log):
-    if IsFailTyep(taskResult):
-        print(f'{datetime.now() - progStartTime}: fail')
-
-    elif taskResult is not None:
+def ProcessResults(taskResult, deltaTime, log):
+    # would rather use IsFailType, but wasn't working
+    if taskResult is not None:
         taskInfo, taskId = taskResult
-        # TODO:  sometimes dies at this point ... probably IsFailType isn't working
-        [netSize,rho,netSeed], [nStream,streamSeed], [maxFlowFrac,cumDist,timeSec] = taskInfo
 
-        line = Info2Line(netSize, rho, netSeed, nStream, streamSeed, maxFlowFrac, cumDist, timeSec)
-        log.Log(line)
+        if IsFailTyep(taskInfo):
+            print(f'{deltaTime}: fail')
+
+        elif taskResult is not None:
+            [netSize,rho,netSeed], [nStream,streamSeed], [maxFlowFrac,cumDist,timeSec] = taskInfo
+
+            line = Info2Line(netSize, rho, netSeed, nStream, streamSeed, maxFlowFrac, cumDist, timeSec)
+            log.Log(line)
+
+            print(f'{deltaTime}:  {netSize}, {nStream}, {maxFlowFrac * cumDist}, {timeSec}')
 
 
 ###########################################################
@@ -158,7 +162,6 @@ if __name__ == '__main__':
 
     while not done:
         netSize = round(LocMath.RandLog(*nRange))
-
         netSeed = random.randint(0, 10 ** numSeedDig - 1)
         netTask = [netSize, rho, netSeed]
 
@@ -166,16 +169,15 @@ if __name__ == '__main__':
         while (escNum < escPerNet) and not done:
             streamSeed = random.randint(0, 10 ** numSeedDig - 1)
 
-            nStream = minNumStream
-            while (nStream <= maxNumStream) and not done:
+            # compleat the current escalation even after time runs out
+            for nStream in range(1,maxNumStream + 1):
                 taskId = [netNum, escNum, nStream]
                 taskArgs = [netTask, [nStream, streamSeed]]
                 taskResult = taskFarm.StartTask(taskId, taskArgs)
 
-                ProcessResults(taskResult, log)
-                done = ((datetime.now() - progStartTime).total_seconds() > duration)
-
-                nStream += 1
+                deltaTime = datetime.now() - progStartTime
+                ProcessResults(taskResult, deltaTime, log)
+                done = (duration < deltaTime.total_seconds())
 
             escNum += 1
         netNum += 1
@@ -183,7 +185,8 @@ if __name__ == '__main__':
     # wait for all the processes to finish
     taskResult = taskFarm.DrainTask()
     while taskResult != None:
-        ProcessResults(taskResult, log)
+        deltaTime = datetime.now() - progStartTime
+        ProcessResults(taskResult, deltaTime, log)
         taskResult = taskFarm.DrainTask()
 
     log.Flush()
