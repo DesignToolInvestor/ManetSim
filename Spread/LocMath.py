@@ -5,10 +5,11 @@
 #
 
 from fractions import Fraction as Frac
-import math
+from statistics import median
+from math import atan2, exp, log, log10, isclose, pi, sqrt, tan
 import random
 
-import LocUtil
+from LocUtil import MinIndex, Partition
 
 
 def Sqr(num):
@@ -24,7 +25,7 @@ def MagSqr(vec):
 
 
 def Mag(vec):
-    return math.sqrt(MagSqr(vec))
+    return sqrt(MagSqr(vec))
 
 
 def DistSqr(loc0, loc1):
@@ -32,7 +33,7 @@ def DistSqr(loc0, loc1):
 
 
 def Dist(node0, node1):
-    return math.sqrt(DistSqr(node0, node1))
+    return sqrt(DistSqr(node0, node1))
 
 
 def Interp(seg, pathFrac):
@@ -45,7 +46,7 @@ def Interp(seg, pathFrac):
 
 
 def RandLog(min, max):
-    return math.exp(random.uniform(math.log(min), math.log(max)))
+    return exp(random.uniform(log(min), log(max)))
 
 
 #######################################
@@ -88,13 +89,13 @@ def RealToFrac(num, eps=1e-6):
 
 
 def LogRange(low,high, majicNum):
-    logMajicNum = [math.log10(num) for num in majicNum]
+    logMajicNum = [log10(num) for num in majicNum]
     
-    lowDec,logLowFrac = divmod(math.log10(low), 1)
-    highDec,logHighFrac = divmod(math.log10(high), 1)
+    lowDec,logLowFrac = divmod(log10(low), 1)
+    highDec,logHighFrac = divmod(log10(high), 1)
 
-    lowIndex = LocUtil.MinIndex([abs(majic - logLowFrac) for majic in logMajicNum])
-    highIndex = LocUtil.MinIndex([abs(majic - logHighFrac) for majic in logMajicNum])
+    lowIndex = MinIndex([abs(majic - logLowFrac) for majic in logMajicNum])
+    highIndex = MinIndex([abs(majic - logHighFrac) for majic in logMajicNum])
 
     result = []
     decade = lowDec
@@ -118,10 +119,38 @@ def IsClose(a,b, rel_tol=1e-09, abs_tol=0.0):
     if (aLen != len(b)):
         return False
     else:
-        close = math.isclose(a[0],b[0], rel_tol=rel_tol, abs_tol=abs_tol)
+        close = isclose(a[0],b[0], rel_tol=rel_tol, abs_tol=abs_tol)
         i = 0
         while close and (i < aLen):
-            close = math.isclose(a[i],b[i], rel_tol=rel_tol, abs_tol=abs_tol)
+            close = isclose(a[i],b[i], rel_tol=rel_tol, abs_tol=abs_tol)
             i += 1
 
         return close
+
+
+def Wrap(list_, low,high):
+    range = high - low
+    result = [(v - low) % range + low for v in list_]
+
+    return result
+
+
+def RobustLine(x,y):
+    centX = median(x)
+    centY = median(y)
+
+    # TODO: can do without partitioning with wrapping ... think about rather this is better
+    left,right = Partition(lambda p: p[0] < centX, list(zip(x,y)))
+
+    temp = [atan2(y - centY, x - centX) for (x,y) in left]
+    temp1 = Wrap(temp, 0, 2*pi)
+    angLeft = list(map(lambda a: a - pi, temp1))
+    angRight = [atan2(y - centY, x - centX) for (x,y) in right]
+
+    ang = angLeft + angRight
+    medAng = median(ang)
+
+    slope = tan(medAng)
+    inter = centY - tan(medAng) * centX
+
+    return ((slope,inter), (centX,centY))
