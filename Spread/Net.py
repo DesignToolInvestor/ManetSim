@@ -107,9 +107,6 @@ def WriteDirNet(net, fileName):
 
 
 ###############################################################
-# Fanout representation
-
-###############################
 # conversion to and from the fanout representation
 def Net2Fan(net):
     # parse argument
@@ -117,15 +114,32 @@ def Net2Fan(net):
     nNode = len(nodes)
 
     # initialize the fanout list
-    fanOut = []
-    for k in range(nNode):
-        fanOut.append([])
+    fanOut = [[] for k in range(nNode)]
 
     # walk the links updating the fanout
     for link in links:
         n0,n1 = link
         fanOut[n0].append(n1)
         fanOut[n1].append(n0)
+
+    # return the result
+    return fanOut
+
+
+def Net2FanLink(net):
+    # parse argument
+    node,link = net
+    nNode = len(node)
+    nLink = len(link)
+
+    # initialize the fanout list
+    fanOut = [[] for k in range(nNode)]
+
+    # walk the links updating the fanout
+    for linkId in range(nLink):
+        n0,n1 = link[linkId]
+        fanOut[n0].append((n1,linkId))
+        fanOut[n1].append((n0,linkId))
 
     # return the result
     return fanOut
