@@ -9,10 +9,9 @@ import math
 import statistics
 from scipy import optimize, stats
 
-import LocMath
 # local packages
-from LocUtil import Select, Grid1, Group, UnZip
-import MakeNet
+from LocUtil import Grid1, Group, Select, UnZip
+from LocMath import LogRange, RobustLine
 import SatLog
 
 #######################################
@@ -95,20 +94,22 @@ if __name__ == '__main__':
 
     plot.xlabel('Num of Node')
     plot.ylabel('Estimated Limit of Flow')
-    plot.title(f'Rho = {rho}')
+
+    plot.rcParams['text.usetex'] = True
+    plot.title(r'Rho = $\sqrt[3]{{ 5 }} \approx 1.71$')
 
     # fit
     logX = list(map(math.log, xL))
     logY = list(map(math.log, yL))
 
-    fit = stats.linregress(logX, logY)
-    print(fit.slope, fit.intercept)
+    # fit = stats.linregress(logX, logY)
+    (slope,intercept), _ = RobustLine(logX,logY)
 
     # TODO:  clean up
     minLogX = min(logX)
     maxLogX = max(logX)
     logXFit = Grid1(minLogX,maxLogX, numGraphPoint)
-    logYFit = list(map(lambda x: fit.slope * x + fit.intercept, logXFit))
+    logYFit = list(map(lambda x: slope * x + intercept, logXFit))
     xFit = list(map(math.exp, logXFit))
     yFit = list(map(math.exp, logYFit))
 
@@ -118,69 +119,25 @@ if __name__ == '__main__':
     # TODO:  automatically put in the north-west
     logXCent = (minLogX + maxLogX) / 2
     xCent = math.exp(logXCent)
-    yCent = math.exp(fit.slope * logXCent + fit.intercept)
+    yCent = math.exp(slope * logXCent + intercept)
     plot.text(
-        xCent, yCent, f'({math.exp(fit.intercept):.2f} * N^{fit.slope:.2f})',
-        ha='center', va='bottom', fontsize=15,
+        xCent, yCent, f'${math.exp(intercept):.2f} \cdot N^{{{slope:.2f}}}$',
+        ha='center', va='center', fontsize=15,
         bbox=dict(facecolor='white', edgecolor='none'), zorder=2)
 
     # add tick marks
     # TODO:  automate this
     tickNum = [1,2,3,5]
 
-    xTick = LocMath.LogRange(min(xL),max(xL), tickNum)
+    xTick = LogRange(min(xL),max(xL), tickNum)
     xTickStr = list(map(str, xTick))
     plot.xticks(ticks=xTick, labels=xTickStr)
 
-    yTick = LocMath.LogRange(min(yL),max(yL), tickNum)
+    yTick = LogRange(min(yL),max(yL), tickNum)
     yTickStr = list(map(str, yTick))
     plot.yticks(ticks=yTick, labels=yTickStr)
 
     # save figure
-    plot.savefig(f'lim_flow_{rho}.png', dpi=200)
+    outFileName = 'lim_flow_cbrt(5).png'
+    plot.savefig(outFileName, dpi=200)
     plot.show()
-
-    # maxNumStream = max(map(lambda p: p[0], graphData))
-    # xFit = Grid1(1, maxNumStream, numGraphPoint)
-    # yFit = list(map(lambda x: b0*x / (x + a0), xFit))
-    #
-    # ###################################
-    #
-    # # plot medians
-    # x,y = UnZip(med)
-    # plot.plot(x,y, 'go', markersize=12, zorder=1)
-    #
-    # # plot asymptote
-    # yAsym = [b0 for _ in range(numGraphPoint)]
-    # plot.plot(xFit,yAsym, 'b--', linewidth=2, zorder=2)
-    #
-    # # add text
-    # r = MakeNet.R(n,rho)
-    # rMed = MakeNet.MedStreamLern(r)
-    #
-    # # TODO:  create a white background
-
-    #
-    # # median flow scale
-    # maxCap = max(map(lambda p: p[1], graphData))
-    # ax = AddMedFlowScale(ax, rMed, maxNumStream, maxCap)
-    #
-    # # labels and title
-    # ax.set_xlabel("Num of Stream")
-    # ax.set_ylabel("Aggregate Capacity")
-    # ax.set_title(f'N = {nSelect}; Rho = {rho}')
-    #
-
-
-    ###################################
-    # do second graph
-    # figInv, ax = plot.subplots(figsize=(9, 6.5))
-    # x = list(map(lambda x: 1/x, nFlow))
-    # plot.plot(x,cap, 'ro',markersize=4,zorder=0)
-    #
-    # x,y = UnZip(med)
-    # x = list(map(lambda x: 1/x, x))
-    # plot.plot(x,y, 'b',zorder=1, linewidth=2)
-    #
-    # plot.savefig(f'flow_graph_{rho}_{nSelect}_inv.png', dpi=200)
-    # plot.show()
