@@ -26,7 +26,7 @@ class Test(TestCase):
         # generate list with repeats
         list_ = [random.randint(0, MAX_NUM - 1) for _ in range(N)]
         uniqueList = LocUtil.Unique(list_)
-        
+
         # compute ground truth
         if MakeMask(uniqueList, MAX_NUM) != MakeMask(list_, MAX_NUM):
             print(f'Seed = {seed}')
@@ -47,7 +47,7 @@ class Test(TestCase):
         mask = [[] for i in range(N_CATEGORY)]
         for i in range(N_ELEM):
             cat = random.randint(0, N_CATEGORY - 1)
-            data = random.randint(0,99)
+            data = random.randint(0, 99)
 
             mask[cat].append(data)
             list_.append([catLet[cat], data])
@@ -75,21 +75,37 @@ class Test(TestCase):
 
             n0 = random.randint(minListSize, maxListSize - 1)
             n1 = random.randint(minListSize, maxListSize - 1)
-            nMin = min(n0,n1)
+            nMin = min(n0, n1)
 
             LocUtil.SetSeed(seed)
-            list0 = [random.randint(0,maxInt) for _ in range(n0)]
+            list0 = [random.randint(0, maxInt) for _ in range(n0)]
 
             LocUtil.SetSeed(seed)
-            list1 = [random.randint(0,maxInt) for _ in range(n1)]
+            list1 = [random.randint(0, maxInt) for _ in range(n1)]
 
             self.assertEqual(list0[:nMin], list1[:nMin])
 
     def test_Partition(self):
         num = [15, 35, 95, 89, 23, 99, 59, 43, 14, 66, 50, 58]
 
-        isPrime = lambda n: not any((n % i) == 0 for i in range(2,n))
-        prime,notPrime = LocUtil.Partition(isPrime, num)
+        isPrime = lambda n: not any((n % i) == 0 for i in range(2, n))
+        prime, notPrime = LocUtil.Partition(isPrime, num)
 
         self.assertEqual(prime, [89, 23, 59, 43])
         self.assertEqual(notPrime, [15, 35, 95, 99, 14, 66, 50, 58])
+
+    def test_UnZip(self):
+        case0 = [('a',5), ('b', 3), ('c', 7)]
+        alpha,num = LocUtil.UnZip(case0)
+        self.assertEqual(['a','b','c'], alpha)
+        self.assertEqual([5,3,7], num)
+
+        case1 = [('a',5,-1), ('b', 3,-2), ('c', 7,-3)]
+        alpha,num,neg = LocUtil.UnZip(case1)
+        self.assertEqual(['a','b','c'], alpha)
+        self.assertEqual([5,3,7], num)
+        self.assertEqual([-1,-2,-3], neg)
+
+        case2 = [1,2,3,4,5,6,7,8,9,10]
+        num = LocUtil.UnZip(case2)
+        self.assertEqual(case2, num)
