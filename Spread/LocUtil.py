@@ -23,16 +23,20 @@ def Grid1(start, stop, nPoint):
     return list(map(lambda k: start + len * (k / (nPoint - 1)), range(nPoint)))
 
 
+# works with either a list of lists or a list of tuples
 def UnZip(zip):
-    x = []
-    y = []
+    firstElem = zip[0]
+    if not isinstance(firstElem, list) and not isinstance(firstElem, tuple):
+        return zip
+    else:
+        nOut = len(zip[0])
+        result = [[] for _ in range(nOut)]
 
-    for elem in zip:
-        x.append(elem[0])
-        y.append(elem[1])
+        for elem in zip:
+            for k in range(nOut):
+                result[k].append(elem[k])
 
-    return (x,y)
-
+        return result
 
 def SetSeed(seed=None, digits=5):
     if seed == None:
@@ -178,3 +182,9 @@ def IndexOfFirst(func, list_):
             return i
 
     return None
+
+
+def Swap(list_, index0, index1):
+    temp = list_[index0]
+    list_[index0] = list_[index1]
+    list_[index1] = temp
