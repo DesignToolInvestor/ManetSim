@@ -109,6 +109,7 @@ def FindDirLinksSlow(nodeLoc) -> list[int,int]:
 def RandNetCirc(n,r, dir=False) -> [list[[float,float], list[int,int]]]:
     nodeLoc = RandNodeCirc(n, r)
 
+    # TOTO:  make one function FindLinksSlow that takes and argument dir
     if dir:
         links = FindDirLinksSlow(nodeLoc)
     else:
