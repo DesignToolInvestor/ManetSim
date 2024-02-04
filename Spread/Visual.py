@@ -3,28 +3,50 @@
 #
 # This is a file of visualization functions.  It is intended as s sort of local library.
 #
-import enum
+
 # system imports
-import math
+import enum
+from math import atan2, cos, sin, pi, sqrt, tan
 import matplotlib.pyplot as plot
 
 # local imports
-import LocMath
-import LocUtil
+from LocMath import Ang, MaxGapAng, Sqr
+from LocUtil import Grid1, Index, UnZip
+import MakeNet
+from Net import Net2Fan
 
 enum.Enum('NetElm', ['NODE','LINK','ALL'])
 
-def GraphBiNet(ax, net, showNode=True, showLink=True):
-    # pattern match on net
-    nodeL, linkL = net
+
+def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, netRad=None):
+    # parse arguments
+    nodeLoc, linkL = net
+    nNode = len(nodeLoc)
+
+    if netRad is None:
+        netRad = MakeNet.R(nNode,2)
 
     # axis properties
     ax.set_aspect('equal')
 
     # plot nodeL
     if showNode:
-        x,y = LocUtil.UnZip(nodeL)
+        x,y = UnZip(nodeLoc)
         ax.scatter(x,y, color='red', s=4)
+
+    # label the nodes
+    # TODO:  scale this by the density
+    r = 0.05 * netRad
+    if nodeNum is not None:
+        neighborTab = Net2Fan(net)
+        angTab = [[Ang(*Index(nodeLoc,[k,n])) for n in neighborTab[k]] for k in range(nNode)]
+        textAng = [MaxGapAng(angTab[k]) for k in range(nNode)]
+
+        for nodeId in range(nNode):
+            nodeX,nodeY = nodeLoc[nodeId]
+            plot.text(
+                nodeX + cos(textAng[nodeId])*r, nodeY + sin(textAng[nodeId])*r,
+                str(nodeNum[nodeId]), color="red", ha="center", va="center")
 
     # plot link
     if showLink:
@@ -32,11 +54,9 @@ def GraphBiNet(ax, net, showNode=True, showLink=True):
         x = []
         y = []
         for link in linkL:
-            x = [nodeL[link[0]][0], nodeL[link[1]][0]]
-            y = [nodeL[link[0]][1], nodeL[link[1]][1]]
+            x = [nodeLoc[link[0]][0], nodeLoc[link[1]][0]]
+            y = [nodeLoc[link[0]][1], nodeLoc[link[1]][1]]
             ax.plot(x,y, color='blue', linewidth=0.3)
-
-    return ax
 
 
 ###############################################################################
@@ -48,8 +68,8 @@ def GraphBiNet(ax, net, showNode=True, showLink=True):
 def CircPoint(circDef, ang):
     rad,(xCent,yCent) = circDef
 
-    x = xCent + rad * math.cos(ang)
-    y = yCent + rad * math.sin(ang)
+    x = xCent + rad * cos(ang)
+    y = yCent + rad * sin(ang)
 
     return [x,y]
     
@@ -70,50 +90,50 @@ def Arc(start,stop, maxOffSet,maxArc):
     xStart,yStart = start
     xStop,yStop = stop
     cord = [xStop - xStart, yStop - yStart]
-    cordLen = LocMath.Len(cord)
-    cordAng = math.atan2(cord[1], cord[0])
+    cordLen = Len(cord)
+    cordAng = atan2(cord[1], cord[0])
 
     # compute arc
-    maxArcOffSet = cordLen * (1 - math.cos(maxArc/2)) / (2*math.sin(maxArc/2))
+    maxArcOffSet = cordLen * (1 - cos(maxArc/2)) / (2*sin(maxArc/2))
     if (maxArcOffSet > maxOffSet):
-        yArg = 4*cordLen*maxOffSet / (LocMath.Sqr(cordLen) + 4*LocMath.Sqr(maxOffSet))
-        xArg = (LocMath.Sqr(cordLen) - 4*LocMath.Sqr(maxOffSet)) / (LocMath.Sqr(cordLen) + 4*LocMath.Sqr(maxOffSet))
-        arcAng = 2 * math.atan2(yArg,xArg)
+        yArg = 4*cordLen*maxOffSet / (Sqr(cordLen) + 4*Sqr(maxOffSet))
+        xArg = (Sqr(cordLen) - 4*Sqr(maxOffSet)) / (Sqr(cordLen) + 4*Sqr(maxOffSet))
+        arcAng = 2 * atan2(yArg,xArg)
     else:
         arcAng = maxArc
 
     # compute R
-    rad = cordLen / math.sqrt(2*(1 - math.cos(arcAng)))
+    rad = cordLen / sqrt(2*(1 - cos(arcAng)))
 
     # compute center
-    startAngToCent = cordAng + (math.pi - arcAng)/2
-    xCent = xStart + rad * math.cos(startAngToCent)
-    yCent = yStart + rad * math.sin(startAngToCent)
+    startAngToCent = cordAng + (pi - arcAng)/2
+    xCent = xStart + rad * cos(startAngToCent)
+    yCent = yStart + rad * sin(startAngToCent)
 
     # compute ard
-    angStart = math.atan2(yStart - yCent, xStart - xCent)
+    angStart = atan2(yStart - yCent, xStart - xCent)
     angStop = angStart + arcAng
-    angs = LocUtil.Grid1(angStart,angStop, NUM_POINT)
+    angs = Grid1(angStart,angStop, NUM_POINT)
 
     points = list(map(lambda ang: CircPoint((rad,(xCent,yCent)), ang), angs))
-    x,y = LocUtil.UnZip(points)
+    x,y = UnZip(points)
 
     return ((x,y), (rad, (xCent,yCent), (angStart, angStop)))
 
 
 def ArcArrow(arcDef, pathFrac, headWidth):
-    ARROR_ANG = math.pi/3
+    ARROR_ANG = pi/3
     
     point,ang = ArcPoint(arcDef, pathFrac)
 
-    dir = ang + math.pi/2
-    headAngOut = dir - math.pi + ARROR_ANG/2
-    headAngIn = dir - math.pi - ARROR_ANG/2
+    dir = ang + pi/2
+    headAngOut = dir - pi + ARROR_ANG/2
+    headAngIn = dir - pi - ARROR_ANG/2
 
-    headLen = headWidth / math.tan(ARROR_ANG/2)
-    outVec = [headLen * math.cos(headAngOut), headLen * math.sin(headAngOut)]
+    headLen = headWidth / tan(ARROR_ANG/2)
+    outVec = [headLen * cos(headAngOut), headLen * sin(headAngOut)]
     tailOut = [point[0] + outVec[0], point[1] + outVec[1]]
-    inVec = [headLen * math.cos(headAngIn), headLen * math.sin(headAngIn)]
+    inVec = [headLen * cos(headAngIn), headLen * sin(headAngIn)]
     tailIn = [point[0] + inVec[0], point[1] + inVec[1]]
     
     return [[point,tailOut], [point,tailIn]]
@@ -139,7 +159,7 @@ def ArcArrow(arcDef, pathFrac, headWidth):
 # TODO:  Combine with GraphBiNet
 def GraphDirNet(dirNet):
     MAX_OFF_SET = 0.05
-    MAX_ARC = math.pi/3
+    MAX_ARC = pi/3
 
     # pattern match on dirNet
     nodeL,linkL = dirNet
@@ -158,7 +178,7 @@ def GraphDirNet(dirNet):
         y = [seg[0][1], seg[1][1]]
         ax.plot(x,y, color='blue', linewidth=0.2)
         
-        point = LocMath.Interp(seg, 2/3)
+        point = Interp(seg, 2/3)
         ax.text(point[0],point[1], str(linkNum), color="blue", ha="center", va="center")
 
     # Plot nodeL.  Want point on top of lines, so they come after line.
