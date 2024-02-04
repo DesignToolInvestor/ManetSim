@@ -176,6 +176,15 @@ def MinIndex(list_):
             minIndex = i
     return minIndex
 
+
+def MaxIndex(list_):
+    maxIndex = 0
+    for i in range(1, len(list_)):
+        if list_[maxIndex] < list_[i]:
+            maxIndex = i
+    return maxIndex
+
+
 def IndexOfFirst(func, list_):
     for i in range(len(list_)):
         if func(list_[i]):
