@@ -53,6 +53,12 @@ class PathHeap:
             self.active[index] = newElem
             self._bubble(index)
 
+    def NumActive(self):
+        return len(self.active)
+
+    ###########################################################################
+    # protected methods
+
     # Naming complexity is too great in the method.  The conventions are:
     #   index:  is the the index into the active array
     #   id:  is the node index.

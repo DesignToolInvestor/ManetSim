@@ -43,13 +43,16 @@ def DijkstraFor(net, sourceId, linkCost):
     return nodeCost, back
 
 
-def DijkstraBack(back, dest):
+def DijkstraBack(back,source, dest):
     node = dest
     path = deque()
 
     while 0 <= back[node]:
         path.appendleft(node)
         node = back[node]
-    path.appendleft(node)
 
-    return list(path)
+    if node != source:
+        return None
+    else:
+        path.appendleft(node)
+        return list(path)

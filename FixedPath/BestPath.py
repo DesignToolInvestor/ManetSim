@@ -14,7 +14,7 @@ def BestPath(net, source,sink, linkCost):
     # set up
     neighborTab = Net2FanLink(net)
 
-    # Do walk
+    # set up
     visited = [False for _ in range(nNode)]
     cost = [float("inf") for _ in range(nNode)]
     parent = [None for _ in range(nNode)]
@@ -24,13 +24,14 @@ def BestPath(net, source,sink, linkCost):
 
     visited[source] = True
 
+    # walk until done or can't walk anymore
     done = False
-    while not done:
-        # when popped, node is done
+    while (not done) and (0 < pathHeap.NumActive()):
         nodeId,nodeCost,parentId = pathHeap.Pop()
         cost[nodeId] = nodeCost
         parent[nodeId] = parentId
 
+        # node is only popped when there are no lower cost paths to it
         done = (nodeId == sink)
         if not done:
             neighborL = neighborTab[nodeId]
@@ -38,23 +39,25 @@ def BestPath(net, source,sink, linkCost):
             for neighborId,linkId in neighborL:
                 newCost = nodeCost + linkCost[linkId]
 
-                if not visited[neighborId]:  # first time to reach it
+                if not visited[neighborId]:  # first time to reach this node
                     pathHeap.Push(neighborId, newCost, nodeId)
                     visited[neighborId] = True
 
-                elif pathHeap.Peak(neighborId) != None:  # still active (not retired)
+                elif pathHeap.Peak(neighborId) != None:  # node is still active (not retired)
                     _, currCost, _ = pathHeap.Peak(neighborId)
                     if newCost < currCost:
                         pathHeap.ChangeCost(neighborId, newCost, nodeId)
 
-                else:  # this node is retired
-                    pass    # just for debugging
+    # return result
+    if not done:
+        return None
 
-    result = deque([sink])
-    node = sink
-    
-    while node != source:
-        node = parent[node]
-        result.appendleft(node)
-    
-    return list(result)
+    else:
+        result = deque([sink])
+        node = sink
+
+        while node != source:
+            node = parent[node]
+            result.appendleft(node)
+
+        return list(result)
