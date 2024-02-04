@@ -42,14 +42,14 @@ class PathHeap:
         else:
             return self.active[self.toActive[nodeId]]
     
-    def ChangeCost(self, nodeId, newCost):
+    def ChangeCost(self, nodeId, newCost, newParent):
         index = self.toActive[nodeId]
         
         if index < 0:
             raise Exception("Can't change cost on non-active node")
         else:
-            id,oldCost,pathParent = self.active[index]
-            newElem = (id, newCost, pathParent)
+            id,oldCost,_ = self.active[index]
+            newElem = (id, newCost, newParent)
             self.active[index] = newElem
             self._bubble(index)
 
