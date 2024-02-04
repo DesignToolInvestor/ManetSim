@@ -153,16 +153,20 @@ def CircDiff(list_):
 
 def MaxGapAng(angL):
     listLen = len(angL)
+    if listLen == 0:
+        return 0;
+    elif listLen == 1:
+        return Wrap(angL[0] + pi, 0,2*pi)
+    else:
+        angL.sort()
+        temp = CircDiff(angL)
+        gapAng = Wrap(temp, 0,2*pi)
 
-    angL.sort()
-    temp = CircDiff(angL)
-    gapAng = Wrap(temp, 0,2*pi)
+        maxGapIndex = MaxIndex(gapAng)
+        ang0 = angL[maxGapIndex]
+        midAng = Wrap(ang0 + gapAng[maxGapIndex] / 2, 0,2*pi)
 
-    maxGapIndex = MaxIndex(gapAng)
-    ang0 = angL[maxGapIndex]
-    midAng = Wrap(ang0 + gapAng[maxGapIndex] / 2, 0,2*pi)
-
-    return midAng
+        return midAng
 
 
 ###############################################################
