@@ -26,12 +26,15 @@ class Test(TestCase):
         seed = None
         numSeedDig = 3
 
-        for _ in range(numNet):
+        SetSeed(None)
+        seedL = [random.randint(0, 10**numSeedDig - 1) for _ in range(numNet)]
+
+        # loop over the networks
+        for netNum in range(numNet):
             # make network
             r = MakeNet.R(nNode,rho)
 
-            seed = SetSeed(seed, numSeedDig)
-            print(f'Seed: {seed}')
+            seed = SetSeed(seedL[netNum])
 
             net = RandNetCirc(nNode, r)
             nodeLoc,linkL = net
@@ -40,10 +43,11 @@ class Test(TestCase):
 
             # visualize net
             fig, ax = plot.subplots(figsize=(6.5, 6.5))
+            print(f'seed: {seed}')
             GraphBiNet(ax, net, True, True, nodeNum=[k for k in range(nNode)])
             plot.title(f'N = {nNode}; Seed = {seed}')
 
-            fileName = f'best_path_{nNode}_{seed}_cost'
+            fileName = f'BestPath/best_path_{nNode}_{seed}_cost'
             plot.savefig(fileName, dpi=200)
             plot.show()
 
@@ -58,6 +62,6 @@ class Test(TestCase):
             print(f'srouce = {source}, dest = {destL}')
 
             for dest in destL:
-                turePath = DijkstraBack(back, dest)
+                turePath = DijkstraBack(back, source,dest)
                 compPath = BestPath(net, source,dest, linkCost)
                 self.assertEqual(turePath,compPath)
