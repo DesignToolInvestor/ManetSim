@@ -5,6 +5,7 @@
 from unittest import TestCase
 
 import random
+from math import pi
 
 import LocMath
 import LocUtil
@@ -61,3 +62,16 @@ class Test(TestCase):
         result = LocMath.Wrap(list_, -0.5, 0.5)
 
         self.assertTrue(LocMath.IsClose(truth, result), f'Seed = {seed}')
+
+    def test_CircDiff(self):
+        case0 = [0, 3, 7, 5]
+        self.assertTrue([3,4,-1,-5], LocMath.CircDiff(case0))
+
+
+    def test_MaxGapAng(self):
+        deg = [0, 22, 105, -170, -55]
+        rad = [d * pi/180 for d in deg]
+        ansDeg = 247.5
+        ansRad = ansDeg * pi/180
+
+        self.assertTrue(ansRad, LocMath.CircDiff(rad))
