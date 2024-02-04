@@ -9,9 +9,10 @@ from statistics import median
 from math import atan2, exp, log, log10, isclose, pi, sqrt, tan
 import random
 
-from LocUtil import MinIndex, Partition
+from LocUtil import MinIndex, MaxIndex, Partition
 
-
+###############################################################
+# 2d point or vector operations
 def Sqr(num):
     return num*num
 
@@ -36,21 +37,21 @@ def Dist(node0, node1):
     return sqrt(DistSqr(node0, node1))
 
 
-def Interp(seg, pathFrac):
+def Ang(start,end):
+    return atan2(end[1] - start[1], end[0] - start[0])
+
+
+def Interp(seg, frac):
     start,stop = seg
 
     vecDiff = Diff(start,stop)
-    result = [start[0] + pathFrac * vecDiff[0], start[1] + pathFrac * vecDiff[1]]
+    result = [start[0] + frac * vecDiff[0], start[1] + frac * vecDiff[1]]
 
     return result
 
 
-def RandLog(min, max):
-    return exp(random.uniform(log(min), log(max)))
-
-
-#######################################
-def RoundRem(num):
+###############################################################
+def RoundDivMod(num):
     whole = round(num)
     rem = num - whole
 
@@ -71,12 +72,12 @@ def ContFrac(numer):
 # TODO:  create 2 pages in the programing manual with a proof of why this works
 # TODO:  Do a cleaner job of dealing with the end cases
 def RealToFrac(num, eps=1e-6):
-    numWhole,rem = RoundRem(num)
+    numWhole,rem = RoundDivMod(num)
     diff = rem
 
     whole = []
     while abs(diff) > num*eps:
-        w,rem = RoundRem(1/rem)
+        w,rem = RoundDivMod(1/rem)
         whole.append(w)
 
         approx = numWhole + ContFrac(whole)
@@ -86,6 +87,11 @@ def RealToFrac(num, eps=1e-6):
         return numWhole
     else:
         return numWhole + ContFrac(whole)
+
+
+###############################################################
+def RandLog(min, max):
+    return exp(random.uniform(log(min), log(max)))
 
 
 def LogRange(low,high, majicNum):
@@ -128,13 +134,38 @@ def IsClose(a,b, rel_tol=1e-09, abs_tol=0.0):
         return close
 
 
-def Wrap(list_, low,high):
+def Wrap(data, low,high):
     range = high - low
-    result = [(v - low) % range + low for v in list_]
+
+    if isinstance(data,list):
+        result = [Wrap(v,low,high) for v in data]
+    else:
+        result = (data - low) % range + low
 
     return result
 
 
+###############################################################
+def CircDiff(list_):
+    listLen = len(list_)
+    return [list_[(k+1) % listLen] - list_[k] for k in range(listLen)]
+
+
+def MaxGapAng(angL):
+    listLen = len(angL)
+
+    angL.sort()
+    temp = CircDiff(angL)
+    gapAng = Wrap(temp, 0,2*pi)
+
+    maxGapIndex = MaxIndex(gapAng)
+    ang0 = angL[maxGapIndex]
+    midAng = Wrap(ang0 + gapAng[maxGapIndex] / 2, 0,2*pi)
+
+    return midAng
+
+
+###############################################################
 def RobustLine(x,y):
     centX = median(x)
     centY = median(y)
