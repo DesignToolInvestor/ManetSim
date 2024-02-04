@@ -4,26 +4,26 @@
 from collections import deque
 
 from Net import Net2FanLink
-from LocUtil import Index
 from PathHeap import PathHeap
 
-def BestPath(source,sink, net, costF):
+def BestPath(net, source,sink, linkCost):
     # parse arguments
     nodeLoc,linkL = net
     nNode = len(nodeLoc)
 
     # set up
-    node2Node = Net2FanLink(net)
-    linkCost = [costF(Index(nodeLoc, link)) for link in linkL]
+    neighborTab = Net2FanLink(net)
 
     # Do walk
-    pathHeap = PathHeap
-    pathHeap.Push((source,0,None))
-
     visited = [False for _ in range(nNode)]
     cost = [float("inf") for _ in range(nNode)]
     parent = [None for _ in range(nNode)]
-    
+
+    pathHeap = PathHeap(nNode)
+    pathHeap.Push(source,0, -1)
+
+    visited[source] = True
+
     done = False
     while not done:
         # when popped, node is done
@@ -33,21 +33,21 @@ def BestPath(source,sink, net, costF):
 
         done = (nodeId == sink)
         if not done:
-            neighborL = node2Node[nodeId]
+            neighborL = neighborTab[nodeId]
 
             for neighborId,linkId in neighborL:
-                if not visited[neighborId]:
-                    neighborCost = nodeCost + linkCost[linkId]
-                    pathHeap.Push((neighborId, neighborCost))
+                newCost = nodeCost + linkCost[linkId]
+
+                if not visited[neighborId]:  # first time to reach it
+                    pathHeap.Push(neighborId, newCost, nodeId)
                     visited[neighborId] = True
 
-                elif pathHeap.Peak(neighborId) != None:
-                    currCost, _ = pathHeap.Peak(neighborId)
-                    newCost = nodeCost + linkCost[neighborId]
+                elif pathHeap.Peak(neighborId) != None:  # still active (not retired)
+                    _, currCost, _ = pathHeap.Peak(neighborId)
                     if newCost < currCost:
-                        pathHeap.ChangeCost(nodeId, newCost)
+                        pathHeap.ChangeCost(neighborId, newCost, nodeId)
 
-                else:
+                else:  # this node is retired
                     pass    # just for debugging
 
     result = deque([sink])
@@ -57,4 +57,4 @@ def BestPath(source,sink, net, costF):
         node = parent[node]
         result.appendleft(node)
     
-    result = list(result)
+    return list(result)
