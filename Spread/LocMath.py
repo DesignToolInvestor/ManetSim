@@ -72,21 +72,24 @@ def ContFrac(numer):
 # TODO:  create 2 pages in the programing manual with a proof of why this works
 # TODO:  Do a cleaner job of dealing with the end cases
 def RealToFrac(num, eps=1e-6):
-    numWhole,rem = RoundDivMod(num)
-    diff = rem
-
-    whole = []
-    while abs(diff) > num*eps:
-        w,rem = RoundDivMod(1/rem)
-        whole.append(w)
-
-        approx = numWhole + ContFrac(whole)
-        diff = num - approx
-
-    if whole == []:
-        return numWhole
+    if abs(num) < eps:
+        return 0
     else:
-        return numWhole + ContFrac(whole)
+        numWhole,rem = RoundDivMod(num)
+        diff = rem
+
+        whole = []
+        while abs(diff) > num*eps:
+            w,rem = RoundDivMod(1/rem)
+            whole.append(w)
+
+            approx = numWhole + ContFrac(whole)
+            diff = num - approx
+
+        if whole == []:
+            return numWhole
+        else:
+            return numWhole + ContFrac(whole)
 
 
 ###############################################################
@@ -189,3 +192,22 @@ def RobustLine(x,y):
     inter = centY - tan(medAng) * centX
 
     return ((slope,inter), (centX,centY))
+
+##############################################################
+# returns a list because a dict is much slower
+# TODO:  time the spead of a dict vs. a list
+def PowerSet(n):
+    # not intended for large n, check for accidental use with large n
+    assert(n < 20)
+
+    lim = (1 << n)
+    result = []
+    for num in range(lim):
+        set = []
+        for bNum in range(n):
+            bit = num & (1 << bNum)
+            if bit != 0:
+                set.append(bNum)
+        result.append(set)
+
+    return result
