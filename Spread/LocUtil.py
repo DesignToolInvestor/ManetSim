@@ -6,11 +6,11 @@ import random
 
 
 # TODO:  consider changing this to return an iterator rather than a list (might be faster)
-def Index(table, index):
+def Sub(table, index):
     result = []
     for i in index:
         if type(i) == list:
-            value = Index(table, i)
+            value = Sub(table, i)
         else:
             value = table[i]
 
@@ -123,6 +123,28 @@ def MinMax(list_):
     return [min_, max_]
 
 
+def MinIndex(list_):
+    minIndex = 0
+    for i in range(1, len(list_)):
+        if list_[i] < list_[minIndex]:
+            minIndex = i
+    return minIndex
+
+
+# originally created to support lists of tuples which is not supported by the system index method
+def Index(list_, elem):
+    listLen = len(list_)
+    index = 0
+    while (index < listLen) and (list_[index] != elem):
+        index += 1
+
+    if index == listLen:
+        return None
+    else:
+        return index
+
+
+###########################################
 def Unique(list_):
     sortList = sorted(list_.copy())
 
@@ -168,13 +190,6 @@ def Group(func, list_):
 
     return result
 
-
-def MinIndex(list_):
-    minIndex = 0
-    for i in range(1, len(list_)):
-        if list_[i] < list_[minIndex]:
-            minIndex = i
-    return minIndex
 
 
 def MaxIndex(list_):
