@@ -6,7 +6,7 @@ from unittest import TestCase
 import random
 
 from PathHeap import PathHeap
-from LocUtil import Index, SetSeed, UnZip
+from LocUtil import Sub, SetSeed, UnZip
 
 ################################################
 def MakeToActive(active, nNode):
@@ -25,7 +25,7 @@ def CheckPathHeap(self, pathHeap, active, priTab):
     else:
         id,pri,_ = UnZip(pathHeap.active)
         self.assertEqual({*id}, {*active})
-        self.assertEqual(pri, Index(priTab,id))
+        self.assertEqual(pri, Sub(priTab,id))
 
     self.assertEqual(MakeToActive(pathHeap.active, len(pathHeap.toActive)), pathHeap.toActive)
 
