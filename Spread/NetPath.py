@@ -55,7 +55,7 @@ def DomCompSubNet(net, direct=False) -> [list([float,float]), list([int,int])]:
     newToOld = comp[0]
     oldToNew = LocUtil.MapInverse(newToOld, nNode)
 
-    newLink = LocUtil.Index(oldToNew, link)
-    newNode = LocUtil.Index(nodeLoc, newToOld)
+    newLink = LocUtil.Sub(oldToNew, link)
+    newNode = LocUtil.Sub(nodeLoc, newToOld)
 
     return [newNode,newLink]
