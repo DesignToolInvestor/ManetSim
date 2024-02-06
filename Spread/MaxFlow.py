@@ -67,7 +67,7 @@ def FlowConstraints(nLink, nodeOutLink, nodeInLink, stream):
     nStream = len(stream)
     
     # define the variables for the solver
-    linkRate = list([cvxpy.Variable() for j in range(nLink)] for k in range(nStream))
+    linkRate = [[cvxpy.Variable() for j in range(nLink)] for k in range(nStream)]
     flowRate = cvxpy.Variable()
 
     # constraints at the ends of the streams
@@ -80,20 +80,20 @@ def FlowConstraints(nLink, nodeOutLink, nodeInLink, stream):
         # source end of stream
         outLink = nodeOutLink[source]
         Trace('{} = flowRate', streamId, outLink)
-        constraints.append(sum(LocUtil.Index(linkRate[streamId], outLink)) == flowRate)
+        constraints.append(sum(LocUtil.Sub(linkRate[streamId], outLink)) == flowRate)
 
         inLink = nodeInLink[source]
         Trace('{} = 0', streamId, inLink)
-        constraints.append(sum(LocUtil.Index(linkRate[streamId], inLink)) == 0)
+        constraints.append(sum(LocUtil.Sub(linkRate[streamId], inLink)) == 0)
 
         # sink end of stream
         inLink = nodeInLink[sink]
         Trace('{} = flowRate', streamId, inLink)
-        constraints.append(sum(LocUtil.Index(linkRate[streamId], inLink)) == flowRate)
+        constraints.append(sum(LocUtil.Sub(linkRate[streamId], inLink)) == flowRate)
 
         outLink = nodeOutLink[sink]
         Trace('{} = 0', streamId, outLink)
-        constraints.append(sum(LocUtil.Index(linkRate[streamId], outLink)) == 0)
+        constraints.append(sum(LocUtil.Sub(linkRate[streamId], outLink)) == 0)
 
     # constraints for conservation of stream (except at ends of the flows)
     Trace("Constraints for conservation at non-source and non-sink nodes")
@@ -109,8 +109,8 @@ def FlowConstraints(nLink, nodeOutLink, nodeInLink, stream):
                 inLink = nodeInLink[nodeNum]
                 Trace('{} = {}', streamId, outLink, inLink)
                 constraints.append(
-                    sum(LocUtil.Index(streamVarL, outLink)) == sum(
-                        LocUtil.Index(streamVarL, inLink)))
+                    sum(LocUtil.Sub(streamVarL, outLink)) == sum(
+                        LocUtil.Sub(streamVarL, inLink)))
 
     # constraints for not overloading the nodes -- sink and source nodes
     Trace("Constraints for node linits at source and sink nodes")
