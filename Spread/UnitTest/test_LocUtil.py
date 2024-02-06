@@ -109,3 +109,8 @@ class Test(TestCase):
         case2 = [1,2,3,4,5,6,7,8,9,10]
         num = LocUtil.UnZip(case2)
         self.assertEqual(case2, num)
+
+    def test_Index(self):
+        list0 = [('a',5), ('b', 3), ('c', 7), ('d', 3)]
+        resultA = LocUtil.Index(list0, ('b',3))
+        self.assertEqual(1, resultA)
