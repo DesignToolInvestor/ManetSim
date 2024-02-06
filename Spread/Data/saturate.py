@@ -110,7 +110,7 @@ def Task(taskInfo):
     else:
         maxFlowFrac = LocMath.RealToFrac(maxFlow)
 
-        endLoc = LocUtil.Index(nodeLoc, stream)
+        endLoc = LocUtil.Sub(nodeLoc, stream)
         cumDist = sum(map(lambda vec: LocMath.Dist(vec[0], vec[1]), endLoc))
 
         return [[netSize,rho,netSeed], [nStream,strSeed], [maxFlowFrac,cumDist, timeSec]]
