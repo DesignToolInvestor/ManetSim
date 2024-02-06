@@ -11,7 +11,7 @@ import matplotlib.pyplot as plot
 
 # local imports
 from LocMath import Ang, MaxGapAng, Sqr
-from LocUtil import Grid1, Index, UnZip
+from LocUtil import Grid1, Sub, UnZip
 import MakeNet
 from Net import Net2Fan
 
@@ -30,33 +30,35 @@ def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, netRad=None)
     ax.set_aspect('equal')
 
     # plot nodeL
+    dotColor = "crimson"
     if showNode:
         x,y = UnZip(nodeLoc)
-        ax.scatter(x,y, color='red', s=4)
+        plot.plot(x,y, 'o', color=dotColor, markersize=2, zorder=1)
 
     # label the nodes
     # TODO:  scale this by the density
     r = 0.05 * netRad
     if nodeNum is not None:
         neighborTab = Net2Fan(net)
-        angTab = [[Ang(*Index(nodeLoc,[k,n])) for n in neighborTab[k]] for k in range(nNode)]
+        angTab = [[Ang(*Sub(nodeLoc,[k,n])) for n in neighborTab[k]] for k in range(nNode)]
         textAng = [MaxGapAng(angTab[k]) for k in range(nNode)]
 
         for nodeId in range(nNode):
             nodeX,nodeY = nodeLoc[nodeId]
             plot.text(
                 nodeX + cos(textAng[nodeId])*r, nodeY + sin(textAng[nodeId])*r,
-                str(nodeNum[nodeId]), color="red", ha="center", va="center")
+                str(nodeNum[nodeId]), color=dotColor, ha="center", va="center")
 
     # plot link
+    linkColor = "sienna"
     if showLink:
-        # TODO:  Figure out how to do this with improved versions of UnZip and Index
+        # TODO:  Figure out how to do this with improved versions of UnZip and Sub
         x = []
         y = []
         for link in linkL:
             x = [nodeLoc[link[0]][0], nodeLoc[link[1]][0]]
             y = [nodeLoc[link[0]][1], nodeLoc[link[1]][1]]
-            ax.plot(x,y, color='blue', linewidth=0.3)
+            ax.plot(x,y, color=linkColor, linewidth=0.3, zorder=0)
 
 
 ###############################################################################
