@@ -1,7 +1,7 @@
 #
 # t e s t _ L o c M a t h . p y
 #
-
+import math
 from unittest import TestCase
 
 import random
@@ -27,6 +27,7 @@ class Test(TestCase):
 
             self.assertTrue(abs(diff) < 1e6, f'seed was {seed}')
 
+    # TODO: add RealToFrac test for numbers approaching zero
 
     def test_IsClose(self):
         list0 = [1,2,3,4,5,6]
@@ -74,4 +75,14 @@ class Test(TestCase):
         ansDeg = 247.5
         ansRad = ansDeg * pi/180
 
-        self.assertTrue(ansRad, LocMath.CircDiff(rad))
+        self.assertTrue(math.isclose(ansRad , LocMath.CircDiff(rad)))
+
+
+    def test_PowerSet(self):
+        result = LocMath.PowerSet(3)
+        ans = [[], [0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]]
+
+        ans.sort()
+        result.sort()
+
+        self.assertEqual(ans, result)
