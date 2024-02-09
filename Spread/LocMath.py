@@ -198,7 +198,7 @@ def RobustLine(x,y):
 # TODO:  time the spead of a dict vs. a list
 def PowerSet(n):
     # not intended for large n, check for accidental use with large n
-    assert(n < 20)
+    assert(n < 30)
 
     lim = (1 << n)
     result = []

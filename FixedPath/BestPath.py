@@ -1,6 +1,7 @@
 #
 # B e s t P a t h . p y
 #
+
 from collections import deque
 
 from Net import Net2FanLink
