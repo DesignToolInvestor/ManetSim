@@ -2,6 +2,8 @@
 # f l o w _ g r a p h . p y
 #
 
+# This script will graph the speed at which the solver can solve maximum flow problems.
+
 # system packages
 import argparse
 from matplotlib import pyplot as plot
