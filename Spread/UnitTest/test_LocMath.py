@@ -11,7 +11,8 @@ import LocMath
 import LocUtil
 
 class Test(TestCase):
-    def test_RealToTest(self):
+    # test fractions between o and 1
+    def test_RealToTest_a(self):
         # constants
         numOfTest = 300
 
@@ -28,6 +29,25 @@ class Test(TestCase):
             self.assertTrue(abs(diff) < 1e6, f'seed was {seed}')
 
     # TODO: add RealToFrac test for numbers approaching zero
+
+    # test mixed fractions
+    def test_RealToTest_b(self):
+        # constants
+        numOfTest = 300
+        numer = 2*3*5*7*11
+        maxNum = 99
+
+        # do seed
+        seed = None
+        seed = LocUtil.SetSeed(seed)
+
+        # do tests
+        for i in range(numOfTest):
+            real = random.randint(0, (maxNum - 1)*numer)/numer + 1 + random.random()/1e8
+            frac = LocMath.RealToFrac(real)
+            diff = real - float(frac)
+
+            self.assertTrue(abs(diff) < 1e6, f'seed was {seed}')
 
     def test_IsClose(self):
         list0 = [1,2,3,4,5,6]
