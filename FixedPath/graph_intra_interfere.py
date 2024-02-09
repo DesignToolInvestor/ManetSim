@@ -2,7 +2,7 @@
 # g r a p h _ i n t r a _ i n t e r f e r e . p y
 #
 
-
+# This script graphs the interference rings
 
 def Circle(cent, r, nPoint):
     x,y = cent
