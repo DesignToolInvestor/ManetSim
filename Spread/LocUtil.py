@@ -3,6 +3,7 @@
 #
 
 import random
+import sys
 
 
 # TODO:  consider changing this to return an iterator rather than a list (might be faster)
@@ -49,6 +50,7 @@ def SetSeed(seed=None, digits=5):
     return seed
 
 
+# TODO:  combine with Flatten
 def FlattenAll(input):
     result = []
 
@@ -62,13 +64,19 @@ def FlattenAll(input):
     return result
 
 
-# TODO:  rewrite as a one-liner (ethan)
-# TODO:  use sorting to make int O(n * ln(m)) rather than O(n * m)
-def ListMinus(a,b):
+# use numLev=0 to flatten to all levels
+def Flatten(list_, numLev=1):
     result = []
-    for elem in a:
-        if elem not in b:
+
+    for elem in list_:
+        t = type(elem)
+        if (t != list) and (t != tuple):
             result.append(elem)
+        elif (numLev == 1):
+            result.extend(elem)
+        else:
+            result.extend(Flatten(elem, numLev - 1))
+
     return result
 
 
@@ -84,6 +92,7 @@ def List2Str(inL):
     return out
 
 
+# TODO: Deprecated.  Replace with [x for x in l if f(x)]
 def Select(func, list_):
     result = []
     for i in range(len(list_)):
@@ -212,3 +221,50 @@ def Swap(list_, index0, index1):
     temp = list_[index0]
     list_[index0] = list_[index1]
     list_[index1] = temp
+
+
+#######################################
+def ListEq(a,b):
+    locA = a.copy()
+    locB = b.copy()
+
+    locA.sort()
+    locB.sort()
+
+    return (locA == locB)
+
+
+def ListMinus(a,b):
+    locA = a.copy()
+    locB = b.copy()
+
+    locA.sort()
+    locB.sort()
+
+    iA = iB = 0
+    result = []
+    while (iA < len(a)) and (iB < len(b)):
+        if locA[iA] == locB[iB]:
+            iA += 1
+            iB += 1
+        else:
+            if locA[iA] < locB[iB]:
+                result.append(locA[iA])
+                iA += 1
+            else:
+                iB += 1
+
+    # at most one of the loop will execute
+    for i in range(iA, len(a)):
+        result.append(locA[i])
+    for i in range(iB, len(b)):
+        result.append(locB[i])
+        
+    return result
+
+
+def DebugMode():
+    has_trace = hasattr(sys, 'gettrace') and sys.gettrace() is not None
+    has_breakpoint = sys.breakpointhook.__module__ != "sys"
+
+    return has_trace or has_breakpoint
