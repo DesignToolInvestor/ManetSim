@@ -17,7 +17,6 @@ def DijkstraFor(net, sourceId, linkCost):
     back = [-1 for _ in range(nNodes)]
 
     visited = [False for _ in range(nNodes)]
-    toDo = []
 
     # source node
     nodeCost[sourceId] = 0
