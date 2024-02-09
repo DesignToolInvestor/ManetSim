@@ -8,7 +8,6 @@
 import argparse
 from concurrent import futures
 from datetime import datetime, timedelta
-import math
 import os
 import random
 import time
