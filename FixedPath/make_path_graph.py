@@ -6,13 +6,14 @@ from math import cos, pi, sin
 from matplotlib import pyplot as plot, pyplot as plt
 import random
 
-import Cost
 from BestPath import BestPath
+import Cost
+from Interfere import InterDist
 from LocMath import Dist
 from LocUtil import SetSeed, Sub, UnZip
 from MakeNet import RandNetCirc
 import MakeNet
-from Visual import GraphBiNet
+
 
 def Order(n0,n1):
     if n0 < n1:
@@ -25,10 +26,6 @@ def Order(n0,n1):
 def Cent(seg):
     (x0,y0),(x1,y1) = seg
     return ((x0 + x1)/2, (y0 + y1)/2)
-
-
-def InterDist(linkDist, snir, gamma):
-    return linkDist * (snir / (1 - linkDist**gamma))**(1/gamma)
 
 
 if __name__ == "__main__":
@@ -107,7 +104,7 @@ if __name__ == "__main__":
     print(f'linkLen: {linkLen}')
     
     snir = 10 ** (snirDb / 20)
-    excludeR = [InterDist(l, snir, 2) for l in linkLen]
+    excludeR = [InterDist(l, 2, snir) for l in linkLen]
     
     # make edge table
     linkLink = []
@@ -118,7 +115,7 @@ if __name__ == "__main__":
                 linkLink.append((l0,l1))
 
     # save link net
-    fileName = 'inter.graph'
+    fileName = 'interfere_a.graph'
     with open(fileName, 'w') as file:
         file.write(f'{nPathLink}\n')
         for link in linkLink:
