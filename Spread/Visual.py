@@ -40,7 +40,7 @@ def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, linkNum=None
     dotColor = "maroon"
     if showNode:
         x,y = UnZip(nodeLoc)
-        plot.plot(x,y, 'o', color=dotColor, markersize=4, zorder=1)
+        plot.plot(x,y, 'o', color=dotColor, markersize=2, zorder=1)
 
         # label the nodes
         # TODO:  scale this by the density
