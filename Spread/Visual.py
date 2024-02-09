@@ -8,9 +8,10 @@
 import enum
 from math import atan2, cos, sin, pi, sqrt, tan
 import matplotlib.pyplot as plot
+from statistics import median
 
 # local imports
-from LocMath import Ang, MaxGapAng, Sqr
+from LocMath import Ang, Interp, MaxGapAng, Sqr
 from LocUtil import Grid1, Sub, UnZip
 import MakeNet
 from Net import Net2Fan
@@ -18,39 +19,44 @@ from Net import Net2Fan
 enum.Enum('NetElm', ['NODE','LINK','ALL'])
 
 
-def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, netRad=None):
+def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, linkNum=None):
     # parse arguments
     nodeLoc, linkL = net
     nNode = len(nodeLoc)
+    nLinks = len(linkL)
 
-    if netRad is None:
-        netRad = MakeNet.R(nNode,2)
+    # estimate network radius
+    if (nodeNum is not None) or (linkNum is not None):
+        xCent = median(loc[0] for loc in nodeLoc)
+        yCent = median(loc[1] for loc in nodeLoc)
+        
+        approxNetRad = sqrt(max(Sqr(x) + Sqr(y) for (x,y) in nodeLoc))
+        labDist = 0.05 * approxNetRad
 
     # axis properties
     ax.set_aspect('equal')
 
     # plot nodeL
-    dotColor = "crimson"
+    dotColor = "maroon"
     if showNode:
         x,y = UnZip(nodeLoc)
-        plot.plot(x,y, 'o', color=dotColor, markersize=2, zorder=1)
+        plot.plot(x,y, 'o', color=dotColor, markersize=4, zorder=1)
 
-    # label the nodes
-    # TODO:  scale this by the density
-    r = 0.05 * netRad
-    if nodeNum is not None:
-        neighborTab = Net2Fan(net)
-        angTab = [[Ang(*Sub(nodeLoc,[k,n])) for n in neighborTab[k]] for k in range(nNode)]
-        textAng = [MaxGapAng(angTab[k]) for k in range(nNode)]
+        # label the nodes
+        # TODO:  scale this by the density
+        if nodeNum is not None:
+            neighborTab = Net2Fan(net)
+            angTab = [[Ang(*Sub(nodeLoc,[k,n])) for n in neighborTab[k]] for k in range(nNode)]
+            textAng = [MaxGapAng(angTab[k]) for k in range(nNode)]
 
-        for nodeId in range(nNode):
-            nodeX,nodeY = nodeLoc[nodeId]
-            plot.text(
-                nodeX + cos(textAng[nodeId])*r, nodeY + sin(textAng[nodeId])*r,
-                str(nodeNum[nodeId]), color=dotColor, ha="center", va="center")
+            for nodeId in range(nNode):
+                nodeX,nodeY = nodeLoc[nodeId]
+                plot.text(
+                    nodeX + cos(textAng[nodeId])*labDist, nodeY + sin(textAng[nodeId])*labDist,
+                    str(nodeNum[nodeId]), fontsize=7, color=dotColor,ha="center", va="center")
 
     # plot link
-    linkColor = "sienna"
+    linkColor = "darkblue"
     if showLink:
         # TODO:  Figure out how to do this with improved versions of UnZip and Sub
         x = []
@@ -59,6 +65,14 @@ def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, netRad=None)
             x = [nodeLoc[link[0]][0], nodeLoc[link[1]][0]]
             y = [nodeLoc[link[0]][1], nodeLoc[link[1]][1]]
             ax.plot(x,y, color=linkColor, linewidth=0.3, zorder=0)
+
+        # label links
+        if linkNum is not None:
+            for linkId in range(nLinks):
+                cent = Interp(Sub(nodeLoc, linkL[linkId]), 1/2)
+                plot.text(
+                    *cent, str(linkNum[linkId]), color=linkColor, fontsize=7,
+                    ha="center", va="center")
 
 
 ###############################################################################
