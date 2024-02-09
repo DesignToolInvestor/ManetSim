@@ -4,10 +4,10 @@
 
 from unittest import TestCase
 
+import math
 import random
 
 import LocUtil
-
 
 class Test(TestCase):
     def test_unique(self):
@@ -114,3 +114,41 @@ class Test(TestCase):
         list0 = [('a',5), ('b', 3), ('c', 7), ('d', 3)]
         resultA = LocUtil.Index(list0, ('b',3))
         self.assertEqual(1, resultA)
+
+    def test_ListMinus(self):
+        list0 = [0,1,2,3,4,5,6,7,8,9,10]
+        list1 = [0,1,2,3,math.pi,5,7]
+
+        result = LocUtil.ListMinus(list0,list1)
+        ans = [4,6,8,9,10]
+
+        self.assertEqual(ans, result)
+
+    def test_Flatten(self):
+        # test 0
+        list0 = [[0,1], [2,3], [3,4]]
+        ans0 = [0, 1, 2, 3, 3, 4]
+
+        result = LocUtil.Flatten(list0)
+        self.assertEqual(ans0, result)
+
+        # test 1
+        list1 = [[[0,1], [2,3]], [[4,3], [3,4]]]
+        ans1 = [[0,1], [2,3], [4,3], [3,4]]
+
+        result = LocUtil.Flatten(list1)
+        self.assertEqual(ans1, result)
+
+        # test 2
+        list2 = [[[0,1], [2,3]], [[4,3], [3,4]]]
+        ans2 = [0,1,2,3,4,3,3,4]
+
+        result = LocUtil.Flatten(list2, 0)
+        self.assertEqual(ans2, result)
+
+        # test 3
+        list3 = [[[[[7,6], 5], 4], 3], 1]
+        ans3 = [[[7, 6], 5], 4, 3, 1]
+
+        result = LocUtil.Flatten(list3, 2)
+        self.assertEqual(ans3, result)
