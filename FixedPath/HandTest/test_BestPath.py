@@ -37,23 +37,7 @@ def ParseArgs():
     # parse args
     args = parser.parse_args()
 
-    # deal with metric
-    if args.metric == "hc":
-            metric = ("hc", "hop count")
-            costF = lambda p0,p1: 1
-    elif args.metric == "sp":
-            metric = ("sp", "shortest path")
-            costF = Cost.R
-    elif args.metric == "xr":
-            metric = ("xr", "exclusion range")
-            snir = 10 ** (args.snirDb / 20)
-            costF = lambda p0,p1: Cost.ExcluR(p0,p1, args.gamma, snir)
-    elif args.metric == "xa":
-            metric = ("xa", "exclusion area")
-            snir = 10 ** (args.snirDb / 20)
-            costF = lambda p0,p1: Cost.ExcluArea(p0,p1, args.gamma, snir)
-    else:
-            raise Exception("Must specify metric.  Either 'hc'. sp', 'xr', or 'xa'")
+
 
     # deal with flow
     flow = eval(args.flow) if args.flow is not None else None

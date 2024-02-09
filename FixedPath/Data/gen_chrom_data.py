@@ -5,11 +5,12 @@
 # system packages
 import argparse
 from datetime import datetime, timedelta
+from matplotlib import pyplot as plot
 from random import sample
 
 # local library files
 from BestPath import BestPath
-import Cost
+from Cost import MetricArg
 from FracChromNum import FracChromNum
 from LocUtil import DebugMode, SetSeed, Sub
 from LocMath import Dist, RealToFrac
@@ -18,7 +19,8 @@ import MakeNet
 from MakeNet import RandNetCirc
 from IndependPrune import IndSubSet
 from Interfere import PathSelfInter
-from StopWatch import StopWatch 
+from StopWatch import StopWatch
+from Visual import GraphBiNet
 
 
 #######################################
@@ -33,6 +35,7 @@ def ParseArgs():
 
     parser.add_argument('-n', type=int, default=300)
     parser.add_argument('-rho', type=float, default=2.0)
+    parser.add_argument('-flow', type=str)
     parser.add_argument('-gamma', type=float, default=2.0)
     parser.add_argument('-snirDb', type=float, default=0)
 
@@ -40,19 +43,13 @@ def ParseArgs():
     args = parser.parse_args()
 
     # deal with metric
-    if args.metric == "sp":
-        costF = Cost.R
-    elif args.metric == "xr":
-        snir = 10 ** (args.snirDb / 20)
-        costF = lambda p0,p1: Cost.ExcluR(p0,p1,snir,gamma)
-    elif args.metric == "xa":
-        snir = 10 ** (args.snirDb / 20)
-        costF = lambda p0, p1: Cost.ExcluArea(p0, p1, snir, gamma)
-    else:
-        raise Exception("Must specify metric.  Either 'sp', 'xr', or 'xa'")
+    costF,metric = MetricArg(args.metric, args.gamma, args.snirDb)
+
+    # deal with flow
+    flow = eval(args.flow) if args.flow is not None else None
 
     # return results
-    return [args.fileName, costF, args.n, args.rho, args.gamma, args.snirDb]
+    return [args.fileName, costF, metric, args.n, args.rho, flow, args.gamma, args.snirDb]
 
 
 #######################################################
@@ -62,10 +59,10 @@ if __name__ == "__main__":
     masterSeed = None
     logDelay = 60
 
-    maxPathLen = 24
+    maxPathLen = 20
 
     # parse arguments
-    fileName,costF,nNode,rho,gamma,snirDb = ParseArgs()
+    fileName,costF,metric,nNode,rho,flow,gamma,snir = ParseArgs()
     flowPerNet = nNode // 10
 
     # start the clock
@@ -101,8 +98,17 @@ if __name__ == "__main__":
         nodeLoc,link = net
         nNode = len(nodeLoc)
 
-        flow = [sample(range(nNode), 2) for _ in range(flowPerNet)]
+        # select all the flows at once
+        if flow is None:
+            flow = [sample(range(nNode), 2) for _ in range(flowPerNet)]
+
         dist = [Dist(*Sub(nodeLoc, f)) for f in flow]
+
+        # for debugging only
+        # fig,ax = plot.subplots(figsize=(6.5, 6.5))
+        # GraphBiNet(ax,net)
+        # plot.show()
+        # plot.close()
 
         # compute link costs
         linkCost = [costF(nodeLoc[n0], nodeLoc[n1]) for (n0, n1) in link]
@@ -112,7 +118,7 @@ if __name__ == "__main__":
         
         # do each flow
         flowNum = 0
-        while (flowNum < flowPerNet) and (totalTime.Seconds() < limInSec):
+        while (flowNum < len(flow)) and (totalTime.Seconds() < limInSec):
             path = BestPath(net, *flow[flowNum], linkCost)
             nHop = len(path) - 1 if (path != None) else 0
 
@@ -124,7 +130,8 @@ if __name__ == "__main__":
                     print(f'{totalTime.Delta()}:  {netNum}, {flowNum}, {nHop}, ** skipped **')
 
                 else:
-                    snir = 10 ** (snirDb / 20)
+                    print(f'{totalTime.Delta()}:  {netNum}, {flowNum}, {nHop}', end='')
+
                     graph = (nHop, PathSelfInter(net, path, gamma, snir))
 
                     timer = StopWatch(running=True)
@@ -144,8 +151,7 @@ if __name__ == "__main__":
                     # chromNum = sum(result)
 
                     # report results
-                    print(f'{totalTime.Delta()}:  {netNum}, {flowNum}, {nHop}, {len(indSubSet)},'
-                          f' {chromNum}')
+                    print(f'{len(indSubSet)},  {chromNum}')
                     resultInfoStr = f'[{chromNum}, {setUpTime}, {solveTime}]'
 
                 if not DebugMode():
