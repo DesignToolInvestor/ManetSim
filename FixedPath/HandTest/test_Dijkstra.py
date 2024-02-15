@@ -20,8 +20,8 @@ from Visual import GraphBiNet
 #######################################
 def ParseArgs():
     parser = argparse.ArgumentParser(
-            prog="plot_sssf",
-            description='This script will plot the achievable capacity for SSSFs'
+        prog="plot_sssf",
+        description='This script will plot the achievable capacity for SSSFs'
     )
 
     parser.add_argument('folder', type=str)
