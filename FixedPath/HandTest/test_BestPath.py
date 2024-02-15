@@ -10,7 +10,7 @@ from matplotlib import pyplot as plot
 from random import sample
 
 from BestPath import BestPath
-import Cost
+from Cost import MetricArg
 from LocUtil import SetSeed, Sub, UnZip
 from MakeNet import RandNetCirc
 import MakeNet
@@ -37,10 +37,11 @@ def ParseArgs():
     # parse args
     args = parser.parse_args()
 
-
-
     # deal with flow
     flow = eval(args.flow) if args.flow is not None else None
+
+    # deal with metric
+    costF,metric = MetricArg(args.metric, args.gamma, args.snirDb)
 
     # return results
     return [
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     x = min(loc[0] for loc in nodeLoc)
     y = max(loc[1] for loc in nodeLoc)
     plot.text(
-        x,y, f'N = {nNode}\nRho = {rho}\nSeed = {seed}\nnHop = {nHop}',
+        x,y, f'N = {nNode}\nRho = {rho}\nSeed = {seed}\nnHop = {nHop}\n{metric[1]}',
         fontsize=8, va="top", ha="left", multialignment="left")
 
     # save figure
