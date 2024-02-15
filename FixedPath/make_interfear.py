@@ -1,7 +1,7 @@
 #
 # m a k e _ i n t e r f e r e . p y
 #
-import os
+
 # This scrip will generate interference graphs from network graphs and store them in files for
 # analysis by other programs
 
@@ -53,7 +53,7 @@ def DoNet(seed, rhoStr):
     print(f'{nHops} hops')
 
     ###########################
-    # make graph
+    # make plot
     fig, ax = plot.subplots(figsize=(6.5,6.5))
     GraphBiNet(ax, net)
 
@@ -80,7 +80,7 @@ def DoNet(seed, rhoStr):
     plot.title(f'{nHops} hops @ rho = {rho} (n = {nNode}, seed = {seed})')
 
     # save figure
-    fileName = f'Cases 500/shortest_{nNode}_{rhoStr}_{seed}_{nHops}.png'
+    fileName = f'Independ/Cases 500/shortest_{nNode}_{rhoStr}_{seed}_{nHops}.png'
     plot.savefig(fileName, dpi=200)
     # plot.show()   # takes a long time to display in PyCharm
     plot.close()
@@ -95,10 +95,10 @@ def DoNet(seed, rhoStr):
         linkLink = PathSelfInter(net, path, gamma, snir)
 
         # save link net
-        fileName = f'Cases 500/shortest_{nNode}_{rhoStr}_{seed}_{nHops}.graph'
+        fileName = f'Independ/Cases 500/shortest_{nNode}_{rhoStr}_{seed}_{nHops}.graph'
         with open(fileName, 'w') as file:
             file.write(f'{nHops}\n')
-            file.write(f'{dist}\n')
+            # file.write(f'{dist}\n')
             for link in linkLink:
                 file.write(f'{link[0]}, {link[1]}\n')
 
@@ -106,7 +106,7 @@ def DoNet(seed, rhoStr):
 if __name__ == "__main__":
     # constants
     nNode = 500
-    numNet = 50
+    numNet = 100
 
     # TODO: one file per network is too fine grained.
     rho = 2.0
