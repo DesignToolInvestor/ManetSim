@@ -4,12 +4,14 @@
 
 import argparse
 from matplotlib import pyplot as plot
+from os import path
 from statistics import median
 
 from LocUtil import UnZip
 
 
 #######################################
+
 def ParseArgs():
     parser = argparse.ArgumentParser(
         prog="plot_sssf",
@@ -22,6 +24,7 @@ def ParseArgs():
     # parse args
     args = parser.parse_args()
 
+    # change to using MetricArg
     # deal with metric
     if args.metric == "sp":
         metric = ("sp", "shortest path")
@@ -37,7 +40,7 @@ def ParseArgs():
 
 
 ##################################################################
-def HopFig(nHop,cap, rho,midDist,metric):
+def HopFig(nHop,cap, rho,midDist,metric, baseName):
     # do graph
     fig, ax = plot.subplots(figsize=(9, 6.5))
 
@@ -53,13 +56,13 @@ def HopFig(nHop,cap, rho,midDist,metric):
         va="top", ha="left", multialignment="left")
 
     # save figure
-    plot.savefig(f"300_2_{metric[0]}_hop.png")
+    plot.savefig(f"{baseName}_hop.png")
     plot.show()
 
     plot.close(fig)
 
 
-def DistFig(dist,cap, rho,midDist,metricStr):
+def DistFig(dist,cap, rho,midDist,metric, baseName):
     # do graph
     fig, ax = plot.subplots(figsize=(9, 6.5))
 
@@ -75,7 +78,7 @@ def DistFig(dist,cap, rho,midDist,metricStr):
         va="top", ha="left", multialignment="left")
 
     # save figure
-    plot.savefig(f"300_2_{metric[0]}_dist.png")
+    plot.savefig(f"{baseName}_dist.png")
     plot.show()
 
     plot.close(fig)
@@ -96,7 +99,7 @@ if __name__ == "__main__":
 
     netInfo,capInfo,result = UnZip(infoL)
     nHop,_,dist = UnZip(capInfo)
-    chromNum,_,_ = UnZip(result)
+    chromNum,_,_,_ = UnZip(result)
 
     nNode,rho,_ = netInfo[0]
 
@@ -104,5 +107,6 @@ if __name__ == "__main__":
     cap = [d/c for (d,c) in zip(dist, chromNum)]
 
     # do graphs
-    HopFig(nHop,cap, rho,median(dist),metric)
-    DistFig(dist,cap, rho,median(dist),metric)
+    baseName = path.basename(fileName)
+    # HopFig(nHop,cap, rho,median(dist),metric, baseName)
+    DistFig(dist,cap, rho,median(dist),metric, baseName)
