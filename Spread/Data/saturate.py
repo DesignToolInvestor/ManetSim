@@ -17,7 +17,7 @@ from multiprocessing import pool
 import LocMath
 import LocUtil
 import Log
-import MakeNet
+from MakeNet import NetR, ParseParams, RandNetCirc
 import MaxFlow
 import NetPath
 
@@ -45,7 +45,7 @@ def ParseArgs():
     args = parser.parse_args()
 
     # check and fix network size parameters
-    n, r, rho = MakeNet.ParseParams(args.n, args.r, args.rho)
+    n, r, rho = ParseParams(args.n, args.r, args.rho)
     if (n < 10):
         raise Exception('Network size is small enough to likely be an error')
 
@@ -82,8 +82,8 @@ def Task(taskInfo):
     
     # make network
     LocUtil.SetSeed(netSeed)
-    r = MakeNet.R(netSize, rho)
-    net = MakeNet.RandNetCirc(netSize, r, dir=True)
+    r = NetR(netSize, rho)
+    net = RandNetCirc(netSize, r, dir=True)
 
     # extract the dominant subnet as a network
     subNet = NetPath.DomCompSubNet(net)
