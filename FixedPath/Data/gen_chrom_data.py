@@ -17,11 +17,13 @@ from LocMath import Dist, RealToFrac
 from Log import Log
 import MakeNet
 from MakeNet import RandNetCirc
-from IndependPrune import IndSubSet
 from Interfere import PathSelfInter
 from StopWatch import StopWatch
 from Visual import GraphBiNet
 
+# special packages
+from IndependPrune import IndSubSet
+# from IndependSlow import IndSubSet
 
 #######################################
 def ParseArgs():
@@ -59,10 +61,10 @@ if __name__ == "__main__":
     masterSeed = None
     logDelay = 60
 
-    maxPathLen = 20
+    maxPathLen = 23
 
     # parse arguments
-    fileName,costF,metric,nNode,rho,flow,gamma,snir = ParseArgs()
+    fileName,costF,metric,nNode,rho,flow,gamma,snirDb = ParseArgs()
     flowPerNet = nNode // 10
 
     # start the clock
@@ -132,11 +134,18 @@ if __name__ == "__main__":
                 else:
                     print(f'{totalTime.Delta()}:  {netNum}, {flowNum}, {nHop}', end='')
 
+                    snir = 10 ** (snirDb / 20)
                     graph = (nHop, PathSelfInter(net, path, gamma, snir))
 
                     timer = StopWatch(running=True)
                     indSubSet = IndSubSet(graph)
                     setUpTime = timer.Stop()
+
+                    nSubSetStr = f'{len(indSubSet):,}'.replace(',', '_')
+                    print(f', {nSubSetStr}', end='')
+
+                    rank = max(map(len, indSubSet))
+                    print(f', rank={rank}', end='')
 
                     # might crash on solve ... save previous results
                     if logDelay < setUpTime:
@@ -144,15 +153,20 @@ if __name__ == "__main__":
                         print(f'nHops = {nHop}  ==>>  {len(indSubSet)} @ {setUpTime}')
 
                     timer.Reset().Start()
-                    result = FracChromNum(nHop, indSubSet)
-                    solveTime = timer.Stop()
+                    try:
+                        result = FracChromNum(nHop, indSubSet)
+                    except:
+                        resultInfoStr = 'None'
+                        print(f', ** failed **')
+                    else:
+                        solveTime = timer.Stop()
 
-                    chromNum = RealToFrac(sum(result))
-                    # chromNum = sum(result)
+                        chromNum = RealToFrac(sum(result))
+                        # chromNum = sum(result)
 
-                    # report results
-                    print(f'{len(indSubSet)},  {chromNum}')
-                    resultInfoStr = f'[{chromNum}, {setUpTime}, {solveTime}]'
+                        # report results
+                        print(f',  {chromNum}')
+                        resultInfoStr = f'[{chromNum}, {nSubSetStr}, {setUpTime}, {solveTime}]'
 
                 if not DebugMode():
                     logLine = f'[{netInfoStr}, {flowInfoStr}, {resultInfoStr}]'
