@@ -7,9 +7,9 @@
 from datetime import datetime
 
 
-# TODO:  originally flushed on deletion, but sometimes the file system was "unloaded"
+# TODO:  originally flushed on deletion, but sometimes the file system was "unloaded" first
 class Log(object):
-    def __init__(self, fileName, epicLen, trace=False):
+    def __init__(self, fileName, epicLen, trace=False, truncate=False):
         self.fileName = fileName
         self.epicLen = epicLen
         self.trace = trace
@@ -17,6 +17,10 @@ class Log(object):
         self.startTime = datetime.now()
         self.flushEpic = 0
         self.buff = []
+
+        if truncate:
+            file = open(self.fileName, 'w')
+            file.close()
 
     def Log(self, line):
         self.buff.append(line)
