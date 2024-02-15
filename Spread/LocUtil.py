@@ -2,6 +2,7 @@
 # L o c U t i l . p y
 #
 
+from math import log, exp
 import random
 import sys
 
@@ -21,8 +22,15 @@ def Sub(table, index):
 
 def Grid1(start, stop, nPoint):
     len = stop - start
-    return list(map(lambda k: start + len * (k / (nPoint - 1)), range(nPoint)))
+    return [start + len * (k / (nPoint - 1)) for k in range(nPoint)]
 
+def LogGrid1(start, stop, nPoint):
+    logStart = log(start)
+    logStop = log(stop)
+    logRange = logStop - logStart
+
+    result = [exp(logStart + logRange * (k / (nPoint - 1))) for k in range(nPoint)]
+    return result
 
 # works with either a list of lists or a list of tuples
 def UnZip(zip):
@@ -70,7 +78,7 @@ def Flatten(list_, numLev=1):
 
     for elem in list_:
         t = type(elem)
-        if (t != list) and (t != tuple):
+        if (t != list) and (t != tuple) and (t != set):
             result.append(elem)
         elif (numLev == 1):
             result.extend(elem)
@@ -95,9 +103,9 @@ def List2Str(inL):
 # TODO: Deprecated.  Replace with [x for x in l if f(x)]
 def Select(func, list_):
     result = []
-    for i in range(len(list_)):
-        if func(list_[i]):
-            result.append(list_[i])
+    for elem in list_:
+        if func(elem):
+            result.append(elem)
 
     return result
 
@@ -225,13 +233,14 @@ def Swap(list_, index0, index1):
 
 #######################################
 def ListEq(a,b):
-    locA = a.copy()
-    locB = b.copy()
+    return (sorted(a) == sorted(b))
 
-    locA.sort()
-    locB.sort()
 
-    return (locA == locB)
+def SetEq(a,b):
+    sortedA = sorted(a)
+    sortedB = sorted(b)
+
+    return (sortedA == sortedB)
 
 
 def ListMinus(a,b):
@@ -268,3 +277,29 @@ def DebugMode():
     has_breakpoint = sys.breakpointhook.__module__ != "sys"
 
     return has_trace or has_breakpoint
+
+
+def BinIn(ordList, elem):
+    lowI = 0
+    highI = len(ordList) - 1
+
+    lowElem = ordList[lowI]
+    highElem = ordList[highI]
+
+    if (elem < lowElem) or (highElem < elem):
+        return False
+    elif (elem == lowElem) or (elem == highElem):
+        return True
+    else:
+        while (lowI + 1 < highI):
+            midI = (lowI + highI) // 2
+            midElem = ordList[midI]
+
+            if (midElem == elem):
+                return True
+            elif (elem < midElem):
+                highI = midI
+            else:
+                lowI = midI
+
+        return False
