@@ -12,6 +12,19 @@ import random
 from LocUtil import MinIndex, MaxIndex, Partition
 
 ###############################################################
+def Interp1(low,high,frac):
+    return frac*(high-low)+low
+
+
+def LogInterp1(low,high,frac):
+    logLow = log(low)
+    logHigh = log(high)
+    logResult = frac * (logHigh - logLow) + logLow
+
+    return exp(logResult)
+
+
+###############################################################
 # 2d point or vector operations
 def Sqr(num):
     return num*num
@@ -48,6 +61,10 @@ def Interp(seg, frac):
     result = [start[0] + frac * vecDiff[0], start[1] + frac * vecDiff[1]]
 
     return result
+
+
+def Cent(seg):
+    return Interp(seg, 1/2)
 
 
 ###############################################################
@@ -194,20 +211,29 @@ def RobustLine(x,y):
     return ((slope,inter), (centX,centY))
 
 ##############################################################
-# returns a list because a dict is much slower
-# TODO:  time the spead of a dict vs. a list
+# TODO:  consider deprecating
 def PowerSet(n):
     # not intended for large n, check for accidental use with large n
-    assert(n < 30)
+    assert(n < 28)
 
     lim = (1 << n)
     result = []
     for num in range(lim):
-        set = []
+        nextSet = []
         for bNum in range(n):
             bit = num & (1 << bNum)
             if bit != 0:
-                set.append(bNum)
-        result.append(set)
+                nextSet.append(bNum)
+        result.append(nextSet)
 
     return result
+
+
+def PowerSetTup(n):
+    # not intended for large n, check for accidental use with large n
+    assert(n < 28)
+
+    lim = (1 << n)
+    result = tuple(tuple(i for i in range(n) if (num & (1 << i))) for num in range(lim))
+
+    return tuple(result)
