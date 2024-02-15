@@ -2,7 +2,8 @@
 # S t o p W a t c h . p y
 #
 
-from datetime import datetime, timedelta
+from time import perf_counter
+from datetime import timedelta
 
 # TODO:  create unit tests
 class StopWatch(object):
@@ -11,37 +12,42 @@ class StopWatch(object):
         self.cumSec = 0
 
         if running:
-            self.start = datetime.now()
+            self.start = perf_counter()
 
-    def Start(self):
+    def Start(self, reset=False):
         if not self.running:
-            self.start = datetime.now()
+            self.start = perf_counter()
             self.running = True
+
+        if reset:
+            self.cumSec = 0
 
     def Stop(self):
         if self.running:
-            stop = datetime.now()
-            self.cumSec += (stop - self.start).total_seconds()
+            stop = perf_counter()
+            self.cumSec += stop - self.start
 
+        self.running = False
+            
         return self.cumSec
 
     def Seconds(self):
         if self.running:
-            now = datetime.now()
-            return (now - self.start).total_seconds()
+            now = perf_counter()
+            return now - self.start
         else:
             return self.cumSec
 
     def Delta(self):
         if self.running:
-            now = datetime.now()
-            return (now - self.start)
+            now = perf_counter()
+            return timedelta(seconds=(now - self.start))
         else:
             return timedelta(seconds=self.cumSec)
 
     def Reset(self):
         if self.running:
-            self.start = datetime.now()
+            self.start = perf_counter()
         self.cumSec = 0
 
         return self
