@@ -15,19 +15,6 @@ from MakeNet import RandNetCirc
 import MakeNet
 
 
-def Order(n0,n1):
-    if n0 < n1:
-        return [n0,n1]
-    else:
-        return [n1,n0]
-
-
-# TODO:  move to LocUtil and add unit test
-def Cent(seg):
-    (x0,y0),(x1,y1) = seg
-    return ((x0 + x1)/2, (y0 + y1)/2)
-
-
 if __name__ == "__main__":
     # constants
     nNode = 50
