@@ -1,14 +1,14 @@
 #
 # t e s t _ L o c M a t h . p y
 #
-import math
-from unittest import TestCase
 
-import random
+import math
 from math import pi
+from unittest import TestCase
+import random
 
 import LocMath
-import LocUtil
+from LocUtil import SetEq, SetSeed
 
 class Test(TestCase):
     # test fractions between o and 1
@@ -18,7 +18,7 @@ class Test(TestCase):
 
         # do seed
         seed = None
-        seed = LocUtil.SetSeed(seed)
+        seed = SetSeed(seed)
 
         # do tests
         for i in range(numOfTest):
@@ -39,7 +39,7 @@ class Test(TestCase):
 
         # do seed
         seed = None
-        seed = LocUtil.SetSeed(seed)
+        seed = SetSeed(seed)
 
         # do tests
         for i in range(numOfTest):
@@ -72,7 +72,7 @@ class Test(TestCase):
 
         # set seed
         seed = None
-        seed = LocUtil.SetSeed(seed)
+        seed = SetSeed(seed)
 
         # setup list
         list_ = [random.random() for _ in range(listLen)]
@@ -97,12 +97,14 @@ class Test(TestCase):
 
         self.assertTrue(math.isclose(ansRad , LocMath.CircDiff(rad)))
 
-
     def test_PowerSet(self):
         result = LocMath.PowerSet(3)
         ans = [[], [0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]]
 
-        ans.sort()
-        result.sort()
+        self.assertTrue(SetEq(ans, result))
 
-        self.assertEqual(ans, result)
+    def test_PowerSetTup(self):
+        result = LocMath.PowerSetTup(3)
+        ans = ((), (0,), (1,), (2,), (0,1), (0,2), (1,2), (0,1,2))
+
+        self.assertTrue(SetEq(ans, result))
