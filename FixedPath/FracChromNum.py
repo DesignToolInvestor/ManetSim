@@ -6,25 +6,25 @@
 # links
 
 import cvxpy
-from LocMath import RealToFrac
 from LocUtil import Sub
 
-def FracChromNum(nNode, indSubSet):
-    # create constraint
-    nIndep = len(indSubSet)
+def FracChromNum(subSetGraph):
+    # parse arguments
+    nNode,subSet = subSetGraph
+    nSubSet = len(subSet)
 
     # TODO:  change to a vector
-    indepVar = [cvxpy.Variable() for _ in range(nIndep)]
+    subSetWeight = [cvxpy.Variable() for _ in range(nSubSet)]
 
     const = []
     for node in range(nNode):
-        index = [i for i in range(nIndep) if node in indSubSet[i]]
-        const.append(sum(Sub(indepVar,index)) >= 1)
+        index = [i for i in range(nSubSet) if node in subSet[i]]
+        const.append(sum(Sub(subSetWeight,index)) >= 1)
 
-    for var in indepVar:
+    for var in subSetWeight:
         const.append(var >= 0)
 
-    goal = cvxpy.Minimize(sum(indepVar))
+    goal = cvxpy.Minimize(sum(subSetWeight))
 
     prob = cvxpy.Problem(goal, const)
     prob.solve(solver=cvxpy.ECOS)
@@ -32,6 +32,6 @@ def FracChromNum(nNode, indSubSet):
     if (prob.status != cvxpy.OPTIMAL):
         raise Exception("solver failure", prob.status)
 
-    result = [float(var.value) for var in indepVar]
+    result = [float(var.value) for var in subSetWeight]
 
     return result
