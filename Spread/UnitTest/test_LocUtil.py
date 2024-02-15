@@ -5,7 +5,7 @@
 from unittest import TestCase
 
 import math
-import random
+from random import randint
 
 import LocUtil
 
@@ -24,7 +24,7 @@ class Test(TestCase):
         seed = LocUtil.SetSeed()
 
         # generate list with repeats
-        list_ = [random.randint(0, MAX_NUM - 1) for _ in range(N)]
+        list_ = [randint(0, MAX_NUM - 1) for _ in range(N)]
         uniqueList = LocUtil.Unique(list_)
 
         # compute ground truth
@@ -46,8 +46,8 @@ class Test(TestCase):
         list_ = []
         mask = [[] for i in range(N_CATEGORY)]
         for i in range(N_ELEM):
-            cat = random.randint(0, N_CATEGORY - 1)
-            data = random.randint(0, 99)
+            cat = randint(0, N_CATEGORY - 1)
+            data = randint(0, 99)
 
             mask[cat].append(data)
             list_.append([catLet[cat], data])
@@ -73,15 +73,15 @@ class Test(TestCase):
         for k in range(numLoop):
             seed = LocUtil.SetSeed(testSeed)
 
-            n0 = random.randint(minListSize, maxListSize - 1)
-            n1 = random.randint(minListSize, maxListSize - 1)
+            n0 = randint(minListSize, maxListSize - 1)
+            n1 = randint(minListSize, maxListSize - 1)
             nMin = min(n0, n1)
 
             LocUtil.SetSeed(seed)
-            list0 = [random.randint(0, maxInt) for _ in range(n0)]
+            list0 = [randint(0, maxInt) for _ in range(n0)]
 
             LocUtil.SetSeed(seed)
-            list1 = [random.randint(0, maxInt) for _ in range(n1)]
+            list1 = [randint(0, maxInt) for _ in range(n1)]
 
             self.assertEqual(list0[:nMin], list1[:nMin])
 
@@ -124,7 +124,7 @@ class Test(TestCase):
 
         self.assertEqual(ans, result)
 
-    def test_Flatten(self):
+    def test_FlattenA(self):
         # test 0
         list0 = [[0,1], [2,3], [3,4]]
         ans0 = [0, 1, 2, 3, 3, 4]
@@ -152,3 +152,51 @@ class Test(TestCase):
 
         result = LocUtil.Flatten(list3, 2)
         self.assertEqual(ans3, result)
+
+    def test_FlattenB(self):
+        # test 0
+        list0 = [(0,1), (2,3), (2,1)]
+        ans0 = [0, 1, 2, 3, 2, 1]
+
+        result = LocUtil.Flatten(list0)
+        self.assertEqual(ans0, result)
+
+        # test 1
+        list1 = [{(0,1), (2,3)}, {(3,1), (5,4)}, {(0,1), (6,5)}]
+        ans1 = [(0,1),(2,3),(3,1),(5,4),(0,1),(6,5)]
+
+        result = LocUtil.Flatten(list1)
+        self.assertEqual(ans1, result)
+
+    def test_BinInA(self):
+        # constants
+        listSize = 200
+        maxNum = 500 - 1
+
+        seed = LocUtil.SetSeed()
+
+        # set up ground truth
+        inList = sorted([randint(0,maxNum) for _ in range(listSize)])
+        inIndex = [n in inList for n in range(maxNum + 1)]
+
+        # do test
+        for i in range(maxNum + 1):
+            if LocUtil.BinIn(inList, i) != inIndex[i]:
+                self.fail(f'seed = {seed}')
+
+    def test_BinInB(self):
+        # constants
+        listSize = 10
+        maxNum = 4
+
+        seed = LocUtil.SetSeed()
+
+        # set up ground truth
+        inList = sorted([(randint(0,maxNum), randint(0,maxNum)) for _ in range(listSize)])
+        inIndex = [[(i1,i0) in inList for i0 in range(maxNum + 1)] for i1 in range(maxNum + 1)]
+
+        # do test
+        for i0 in range(maxNum + 1):
+            for i1 in range(maxNum + 1):
+                if LocUtil.BinIn(inList, (i0,i1)) != inIndex[i0][i1]:
+                    self.fail(f'seed = {seed}')
