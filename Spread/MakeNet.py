@@ -21,7 +21,7 @@ def Rho(n, r):
     return math.pi * LocMath.Sqr(r) / n
 
 
-def R(n, rho):
+def NetR(n, rho):
     return math.sqrt(n / rho / math.pi)
 
 
