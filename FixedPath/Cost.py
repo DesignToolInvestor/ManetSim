@@ -8,7 +8,7 @@ from LocMath import Dist, Sqr
 from Interfere import InterDist
 
 
-def R(loc0, loc1):
+def LinkR(loc0, loc1):
     return Dist(loc0, loc1)
 
 
@@ -27,19 +27,32 @@ def ExcluArea(loc0, loc1, gamma, snir):
 
 
 #######################################
-def MetricArg(metricArg, gamma,snirDb):
-    # deal with metric
-    if metricArg == "hc":
+def MetricArg(metricSym):
+    if metricSym == "hc":
+            metric = ("hc", "hop count")
+    elif metricSym == "sp":
+            metric = ("sp", "shortest path")
+    elif metricSym == "xr":
+            metric = ("xr", "exclusion range")
+    elif metricSym == "xa":
+            metric = ("xa", "exclusion area")
+    else:
+            raise Exception("Must specify metric.  Either 'hc'. sp', 'xr', or 'xa'")
+
+    return metric
+    
+def MetricCostF(metricSym, gamma,snirDb):
+    if metricSym == "hc":
             metric = ("hc", "hop count")
             costF = lambda p0,p1: 1
-    elif metricArg == "sp":
+    elif metricSym == "sp":
             metric = ("sp", "shortest path")
-            costF = R
-    elif metricArg == "xr":
+            costF = LinkR
+    elif metricSym == "xr":
             metric = ("xr", "exclusion range")
             snir = 10 ** (snirDb / 20)
             costF = lambda p0,p1: ExcluR(p0,p1, gamma, snir)
-    elif metricArg == "xa":
+    elif metricSym == "xa":
             metric = ("xa", "exclusion area")
             snir = 10 ** (snirDb / 20)
             costF = lambda p0,p1: ExcluArea(p0,p1, gamma, snir)
