@@ -6,8 +6,8 @@ from unittest import TestCase
 
 from random import shuffle
 
-from ClickSlow import Click as ClickSlow
-from ClickPrune import Click as ClickPrune
+from CliqueSlow import Click as ClickSlow
+from CliquePrune import Click as ClickPrune
 from LocUtil import SetEq
 
 
@@ -30,20 +30,23 @@ class Test(TestCase):
         link = [[0,1], [0,5], [1,2], [1,5], [2,3], [2,4], [3,4], [4,5]]
         graph = (6, link)
 
-        result = ClickSlow(graph)
+        resultSlow = ClickSlow(graph)
+        resultPrune = ClickPrune(graph)
 
         ans = (
             (0,), (1,), (2,), (3,), (4,), (5,),
             (0,1), (0,5), (1,2), (1,5), (2,3), (2,4), (3,4), (4,5),
             (0,1,5), (2,3,4)
          )
-        self.assertTrue(SetEq(ans, result))
+        self.assertTrue(SetEq(ans, resultSlow))
+        self.assertTrue(SetEq(ans, resultPrune))
 
     def test_ClickC(self):
         link = [[0,1], [0,2], [0,4], [1,2], [1,4], [2,3], [2,4], [3,4]]
         graph = (5, link)
 
-        result = ClickSlow(graph)
+        resultSlow = ClickSlow(graph)
+        resultPrune = ClickPrune(graph)
 
         ans = (
             (0,), (1,), (2,), (3,), (4,),
@@ -51,4 +54,5 @@ class Test(TestCase):
             (0,1,2), (0,1,4), (0,2,4), (1,2,4), (2,3,4),
             (0,1,2,4)
         )
-        self.assertTrue(SetEq(ans, result))
+        self.assertTrue(SetEq(ans, resultSlow))
+        self.assertTrue(SetEq(ans, resultPrune))
