@@ -2,13 +2,14 @@
 # p l o t _ s s s f . p y
 #
 
+# SSSF stands for single strand single flow
+
 import argparse
 from matplotlib import pyplot as plot
-from os import path
 from statistics import median
 
 from LocUtil import UnZip
-
+from Cost import MetricCostF
 
 #######################################
 
@@ -24,16 +25,8 @@ def ParseArgs():
     # parse args
     args = parser.parse_args()
 
-    # change to using MetricArg
     # deal with metric
-    if args.metric == "sp":
-        metric = ("sp", "shortest path")
-    elif args.metric == "xr":
-        metric = ("xr", "exclusion range")
-    elif args.metric == "xa":
-        metric = ("xa", "exclusion area")
-    else:
-        raise Exception("Must specify metric.  Either 'sp', 'xr', or 'xa'")
+    metric = MetricCostF(args.metric)
 
     # return results
     return [args.fileName, metric]
@@ -95,11 +88,11 @@ if __name__ == "__main__":
 
     # pattern match data
     temp = [eval(l) for l in link]
-    infoL = [info for info in temp if info[2] is not None]
+    infoL = [info for info in temp if (info[2] is not None) and (info[2][1] is not None)]
 
     netInfo,capInfo,result = UnZip(infoL)
     nHop,_,dist = UnZip(capInfo)
-    chromNum,_,_,_ = UnZip(result)
+    nSubSet,chromNum,_,_ = UnZip(result)
 
     nNode,rho,_ = netInfo[0]
 
@@ -107,6 +100,7 @@ if __name__ == "__main__":
     cap = [d/c for (d,c) in zip(dist, chromNum)]
 
     # do graphs
-    baseName = path.basename(fileName)
+    baseName = fileName.split('.')[0]
+
     # HopFig(nHop,cap, rho,median(dist),metric, baseName)
     DistFig(dist,cap, rho,median(dist),metric, baseName)
