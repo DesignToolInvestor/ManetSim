@@ -1,7 +1,7 @@
 #
 # L o c M a t h . p y
 #
-# TODO:  Move inside some larger library, perhaps called ParkerLevy
+# TODO:  Move inside some larger library, perhaps called ParkerLib
 #
 
 from fractions import Fraction as Frac
@@ -24,8 +24,16 @@ def LogInterp1(low,high,frac):
     return exp(logResult)
 
 
+def Interp2(start,stop, frac):
+    x0,y0 = start
+    x1,y1 = stop
+    return (Interp1(x0,x1, frac), Interp1(y0,y1, frac))
+
+
 ###############################################################
 # 2d point or vector operations
+# TODO:  create a point class ... this is wildly out of hand ... doing so will allow operator
+#  overloading
 def Sqr(num):
     return num*num
 
@@ -65,6 +73,22 @@ def Interp(seg, frac):
 
 def Cent(seg):
     return Interp(seg, 1/2)
+
+
+def Scale(scale,point):
+    return (scale * point[0], scale * point[1])
+
+
+def Add(a,b):
+    return (a[0] + b[0], a[1] + b[1])
+
+
+def Perp(vec):
+    x,y = vec
+    dist = Mag(vec)
+    result = (-y/dist, x/dist)
+
+    return result
 
 
 ###############################################################
