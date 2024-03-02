@@ -1,8 +1,8 @@
 #
-# C l i c k S l o w . p y
+# C l i q u e S l o w . p y
 #
 
-# This library contains functions that compute all the clicks in a graph, using exhaustive search.
+# This library contains functions that compute all the cliques in a graph, using exhaustive search.
 # It's primarily purpose is to test the correctness of less slow methods.
 
 # This function is leveraging (and enforcing) the assumption that all the sets are
@@ -14,7 +14,7 @@
 from LocMath import PowerSetTup
 
 
-def Click(graph):
+def Clique(graph):
     # parse arguments
     nNode, linkL = graph
 
@@ -36,7 +36,7 @@ def Click(graph):
                     n0 = set[i0]
                     n1 = set[i1]
 
-                    if [n0, n1] not in linkL:
+                    if (n0, n1) not in linkL:
                         done = True
                     i1 += 1
 
