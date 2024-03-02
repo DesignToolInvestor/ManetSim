@@ -7,6 +7,8 @@ from collections import deque
 from Net import Net2FanLink
 from PathHeap import PathHeap
 
+
+# TODO: change source,sink to a tuple called pathEnd
 def BestPath(net, source,sink, linkCost):
     # parse arguments
     nodeLoc,linkL = net
