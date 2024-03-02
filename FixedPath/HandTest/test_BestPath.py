@@ -10,7 +10,7 @@ from matplotlib import pyplot as plot
 from random import sample
 
 from BestPath import BestPath
-from Cost import MetricArg
+from Cost import MetricCostF
 from LocUtil import SetSeed, Sub, UnZip
 from MakeNet import RandNetCirc
 import MakeNet
@@ -41,7 +41,7 @@ def ParseArgs():
     flow = eval(args.flow) if args.flow is not None else None
 
     # deal with metric
-    costF,metric = MetricArg(args.metric, args.gamma, args.snirDb)
+    costF,metric = MetricCostF(args.metric, args.gamma, args.snirDb)
 
     # return results
     return [
