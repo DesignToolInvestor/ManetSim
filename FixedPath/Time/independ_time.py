@@ -49,7 +49,7 @@ def ParseArgs():
 if __name__ == "__main__":
     # constants
     nSeedDig = 5
-    maxNHops = 38
+    maxNHops = 40
 
     # parse arguments
     fileName,nNode,nNet,rho,gamma,snirDb = ParseArgs()
@@ -71,9 +71,9 @@ if __name__ == "__main__":
         pathEnd = sample(range(nNode), k=2)
 
         # get path
-        # linkCost = [Cost.R(nodeLoc[n0], nodeLoc[n1]) for (n0,n1) in link]
-        # linkCost = [Cost.ExcluR(nodeLoc[n0], nodeLoc[n1], gamma,snir) for (n0,n1) in link]
-        linkCost = [Cost.ExcluArea(nodeLoc[n0], nodeLoc[n1], gamma,snir) for (n0,n1) in link]
+        # linkCost = [Cost.LinkR(nodeLoc[n0], nodeLoc[n1]) for (n0,n1) in link]
+        linkCost = [Cost.ExcluR(nodeLoc[n0], nodeLoc[n1], gamma,snir) for (n0,n1) in link]
+        # linkCost = [Cost.ExcluArea(nodeLoc[n0], nodeLoc[n1], gamma,snir) for (n0,n1) in link]
 
         path = BestPath(net, *pathEnd, linkCost)
 
