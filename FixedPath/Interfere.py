@@ -20,16 +20,22 @@ def PathSelfInter(net, path, gamma, snir):
     nodeLoc,linkL = net
 
     # compute tables for exclusion range of each link in path
-    linkDest = Sub(nodeLoc, path[1:])
+    recLoc = Sub(nodeLoc, path[1:])
+    transLoc = Sub(nodeLoc, path[:nHops])
+    
     linkLen = [Dist(nodeLoc[path[k]], nodeLoc[path[k + 1]]) for k in range(nHops)]
     excludeR = [InterDist(l, gamma, snir) for l in linkLen]
 
     # make edge table
     linkLink = []
-    for l0 in range(0, nHops - 1):
-        for l1 in range(l0 + 1, nHops):
-            interDist = Dist(linkDest[l0], linkDest[l1])
-            if (interDist < excludeR[l0]) or (interDist <= excludeR[l1]):
-                linkLink.append((l0, l1))
+    for link0 in range(0, nHops - 1):
+        for link1 in range(link0 + 1, nHops):
+            interDist = Dist(recLoc[link0], transLoc[link1])
+            if (interDist < excludeR[link0]):
+                linkLink.append((link0, link1))
+            else:
+                interDist = Dist(recLoc[link1], transLoc[link0])
+                if (interDist < excludeR[link1]):
+                    linkLink.append((link0, link1))
 
     return linkLink
