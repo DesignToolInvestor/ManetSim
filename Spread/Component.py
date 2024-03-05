@@ -1,5 +1,5 @@
 #
-# N e t P a t h . p y
+# C o m p o n e n t . p y
 #
 
 # This is a library for functions related to paths over a network.
