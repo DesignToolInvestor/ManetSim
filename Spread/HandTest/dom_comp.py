@@ -9,7 +9,7 @@ import math
 import matplotlib.pyplot as plot
 
 import LocUtil
-import NetPath
+import Component
 import MakeNet
 import Visual
 

@@ -12,7 +12,7 @@ import LocMath
 import LocUtil
 import MakeNet
 import MaxFlow
-import NetPath
+import Component
 
 ###############################
 if __name__ == "__main__":

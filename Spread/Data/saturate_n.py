@@ -16,7 +16,7 @@ import LocUtil
 import Log
 import MakeNet
 import MaxFlow
-import NetPath
+import Component
 import TaskFarm
 
 # TODO:  Make this a local variable

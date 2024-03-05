@@ -19,7 +19,7 @@ import LocUtil
 import Log
 from MakeNet import NetR, ParseParams, RandNetCirc
 import MaxFlow
-import NetPath
+import Component
 
 # global variable
 progStartTime = datetime.now()
