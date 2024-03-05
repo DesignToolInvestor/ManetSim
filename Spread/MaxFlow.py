@@ -8,6 +8,8 @@ from datetime import datetime
 import LocMath
 import LocUtil
 
+
+# TODO:  Remove this function
 def DefaultLinkCost(a, b):
     return LocMath.DistSqr(a, b)
 
