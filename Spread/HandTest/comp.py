@@ -2,17 +2,18 @@
 # c o m p . p y
 #
 
-# This is a program to preform a test of the partitioning of a network into components.  It
-# creates a list of the components of the network represented as a list of node numbers.  The
-# components are sorted in order of decreasing size.  That is the dominant component is the first
-# one.
+# This program tests the partitioning of networks into components.  It creates a list of the
+# network components represented as a list of node numbers.  The components are sorted in order
+# of decreasing size.  That is, the dominant component is the first one.
+
+# TODO:  Does it actually test anything or just go through the motions
 
 import colorsys
 import math
 from matplotlib import pyplot as plot
 
 import LocUtil
-import NetPath
+import Component
 import MakeNet
 import Visual
 
