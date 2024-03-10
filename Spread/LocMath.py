@@ -75,7 +75,7 @@ def Cent(seg):
     return Interp(seg, 1/2)
 
 
-def Scale(scale,point):
+def Scale(scale, point):
     return (scale * point[0], scale * point[1])
 
 
@@ -234,8 +234,8 @@ def RobustLine(x,y):
 
     return ((slope,inter), (centX,centY))
 
+
 ##############################################################
-# TODO:  consider deprecating
 def PowerSet(n):
     # not intended for large n, check for accidental use with large n
     assert(n < 28)
@@ -248,16 +248,35 @@ def PowerSet(n):
             bit = num & (1 << bNum)
             if bit != 0:
                 nextSet.append(bNum)
-        result.append(nextSet)
+        result.append(tuple(nextSet))
 
-    return result
+    return tuple(result)
 
 
 def PowerSetTup(n):
     # not intended for large n, check for accidental use with large n
-    assert(n < 28)
+    assert(n < 30)
 
     lim = (1 << n)
     result = tuple(tuple(i for i in range(n) if (num & (1 << i))) for num in range(lim))
 
     return tuple(result)
+
+
+#################################################
+def CircClipCirc(circ, clipCirc):
+    circCent, circRad = circ
+    clipCent, clipRad = clipCirc
+
+    clipToCirc = Dist(circCent, clipCent)
+    if (clipRad + circRad) < clipToCirc:
+        return None
+
+    elif (clipToCirc + circRad) < clipRad:
+        return (circCent, (0, 2 * pi))
+
+    else:
+        baseAng = Ang(clipCent, circCent)
+        angChange = acos(
+            (Sqr(clipRad) - Sqr(circRad) - Sqr(clipToCirc)) / (2 * circRad * clipToCirc))
+        return (circCent, (baseAng - angChange, baseAng + angChange))
