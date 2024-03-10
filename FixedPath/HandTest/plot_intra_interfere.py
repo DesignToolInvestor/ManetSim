@@ -181,8 +181,8 @@ if __name__ == "__main__":
 
         ####################################
         # clique number
-        cliqueSlow = cliqueSlow((nHops,linkLink))
-        cliquePrune = cliquePrune((nHops, linkLink))
+        cliqueSlow = CliqueSlow((nHops,linkLink))
+        cliquePrune = CliquePrune((nHops, linkLink))
 
         assert(SetEq(cliqueSlow, cliquePrune))
 

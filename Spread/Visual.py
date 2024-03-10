@@ -7,7 +7,7 @@
 # system imports
 import enum
 from math import atan2, cos, sin, pi, sqrt, tan
-import matplotlib.pyplot as plot
+from matplotlib import axes, pyplot as plot
 from statistics import median
 
 # local imports
@@ -64,7 +64,7 @@ def GraphBiNet(ax, net, showNode=True, showLink=True, nodeNum=None, linkNum=None
         for link in linkL:
             x = [nodeLoc[link[0]][0], nodeLoc[link[1]][0]]
             y = [nodeLoc[link[0]][1], nodeLoc[link[1]][1]]
-            ax.plot(x,y, color=linkColor, linewidth=0.3, zorder=0)
+            plot.plot(x,y, color=linkColor, linewidth=0.3, zorder=0)
 
         # label links
         if linkNum is not None:
