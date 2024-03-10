@@ -30,7 +30,7 @@ def IndSubSet(graph):
     while 0 < len(subBySize[subSetSize - 2]):
         level = []
         for leaf in subBySize[subSetSize - 2]:
-            # because the subsets are in order only need to consider extension beyond mas
+            # because subsets ordered only need to consider an extension beyond the last element
             for extendNode in range(max(leaf) + 1, nNode):
                 dropIndex = 0
                 noConflict = True
@@ -55,6 +55,6 @@ def IndSubSet(graph):
 
     # return all the different sizes
     result = Flatten(subBySize,1)
-    result = [[*s] if type(s) == tuple else [s] for s in result]
+    result = [s if type(s) == tuple else (s,) for s in result]
 
     return result
