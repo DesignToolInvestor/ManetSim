@@ -21,20 +21,23 @@
 
 from LocUtil import Flatten
 
+# The definition is contrived to not count the singletons as cliques, because they must be
+# counted as independent subsets for the cover problem and it causes problems to count them as both.
 def Clique(graph):
     # parse arguments
     nNode, linkL = graph
 
     #############################
-    # clique size == 1 and 2
-    cliqueBySize = [{(id,) for id in range(nNode)}, {tuple(l) for l in linkL}]
+    # clique size == 2
+    baseClickSize = 2
+    cliqueBySize = [{tuple(l) for l in linkL}]
 
     #############################
     # clique size > 2
     cliqueSize = 3
-    while 0 < len(cliqueBySize[cliqueSize - 2]):
+    while 0 < len(cliqueBySize[cliqueSize - baseClickSize - 1]):
         level = []
-        for leaf in cliqueBySize[cliqueSize - 2]:
+        for leaf in cliqueBySize[cliqueSize - 3]:
             # because the subsets are in order only need to consider extension beyond mas
             for extendNode in range(max(leaf) + 1, nNode):
                 dropIndex = 0
@@ -47,7 +50,7 @@ def Clique(graph):
                         tuple(leaf[i] for i in range(dropIndex + 1, cliqueSize - 1))
                     mustHave = (*temp, extendNode)
 
-                    noMissLink = (mustHave in cliqueBySize[cliqueSize - 2])
+                    noMissLink = (mustHave in cliqueBySize[cliqueSize - baseClickSize - 1])
                     dropIndex += 1
 
                 if noMissLink:
