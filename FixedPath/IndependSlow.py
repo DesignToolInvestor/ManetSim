@@ -9,6 +9,7 @@
 
 from LocMath import PowerSet
 
+
 def IndSubSet(graph):
     # parse arguments
     nNode, linkL = graph

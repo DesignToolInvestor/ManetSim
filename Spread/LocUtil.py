@@ -32,6 +32,7 @@ def LogGrid1(start, stop, nPoint):
     result = [exp(logStart + logRange * (k / (nPoint - 1))) for k in range(nPoint)]
     return result
 
+
 # works with either a list of lists or a list of tuples
 def UnZip(zip):
     firstElem = zip[0]
