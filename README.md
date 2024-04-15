@@ -1,10 +1,10 @@
-#MANET Simulation Tools
+# MANET Simulation Tools
 
 This is the GitHub in project names *ManetSim* at
 
 https://github.com/DesignToolInvestor/ManetSim.git
 
-##Purpose
+## Purpose
 This repository contains Python code for simulating MANET (Mobil Ad-Hoc Networks).
 Many of the functions will be slow and need to be replaced by compiled equivalent
 functions writen in compiled languages.  Nevertheless, it is easier to visualize 
