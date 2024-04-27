@@ -19,19 +19,19 @@ def Hermite(lowVal, highVal, end):
   r = []
 
   # The polynomial is sum(c[i]*a[i] * x**p[i])
-  p = [k for k in range(totOrd + 1)]
+  p = [derivDeg for derivDeg in range(totOrd + 1)]
   c = [1 for _ in range(totOrd + 1)]
 
-  for k in range(max(lowOrd,highOrd) + 1):
-    if k <= lowOrd:
+  for derivDeg in range(max(lowOrd,highOrd) + 1):
+    if derivDeg <= lowOrd:
       temp = [c * low**p for (c,p) in zip(c,p)]
       m.append(temp)
-      r.append(lowVal[k])
+      r.append(lowVal[derivDeg])
 
-    if k <= highOrd:
+    if derivDeg <= highOrd:
       temp = [c * high**p for (c,p) in zip(c,p)]
       m.append(temp)
-      r.append(highVal[k])
+      r.append(highVal[derivDeg])
 
     # differentiate the polynomial
     c = [c*p for (c,p) in zip(c,p)]
@@ -44,18 +44,22 @@ def Hermite(lowVal, highVal, end):
 
 def MolSet(order, end):
   lowOrd,highOrd = order
+  totOrd = lowOrd + highOrd + 1
+
   low,high = end
   result = []
 
-  for k in range(0, lowOrd + 1):
-    lowPoly = MolAtPoint(lowOrd,k, low)
-    highPoly = NullAtPoint(highOrd, high)
-    result.append(factor(lowPoly*highPoly))
+  highVal = [0 for _ in range(highOrd + 1)]
+  for derivDeg in range(0, lowOrd + 1):
+    lowVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, lowOrd + 1)]
+    poly = Hermite(lowVal, highVal, end)
+    result.append(poly)
 
-  for k in range(0, highOrd + 1):
-    lowPoly = NullAtPoint(lowOrd, low)
-    highPoly = MolAtPoint(highOrd, k, high)
-    result.append(factor(lowPoly * highPoly))
+  lowVal = [0 for _ in range(lowOrd + 1)]
+  for derivDeg in range(0, highOrd + 1):
+    highVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, highOrd + 1)]
+    poly = Hermite(lowVal, highVal, end)
+    result.append(poly)
 
   return result
 
