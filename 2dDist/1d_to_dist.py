@@ -1,19 +1,14 @@
 #
 # 1 d _ t o _ d i s t . p y
 #
-from collections import namedtuple
 
 from math import asinh, exp, log, sinh, sqrt
 from matplotlib import pyplot as plot
 
+import Gamma2_1
 from LocUtil import Grid1
 from Mollifier import MolSet
-import Gamma2_1
-
-#######################
-Map = namedtuple('Map', ['For', 'Inv'])
-
-
+from Sinc import Map
 
 
 ###########################
@@ -35,7 +30,7 @@ if __name__ == "__main__":
   ax[0].plot(sampSort, quant, '*', c="Maroon", label="samples", zorder=1)
 
   xL = Grid1(*xRange, nPlotPoint)
-  yL = tuple(Cdf(x) for x in xL)
+  yL = tuple(Gamma2_1.Cdf(x) for x in xL)
   ax[0].plot(xL,yL, c="Blue", label="cdf", zorder=0)
 
   ax[0].set_xlabel('Value')
@@ -63,7 +58,7 @@ if __name__ == "__main__":
 
   ax[2].plot(mapSamp, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
 
-  # plot sinc est
+  # plot function to be estimated by sinc series
   mapSamp = [map.For(s) for s in sampSort]
 
   ax[2].plot(mapSamp, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
@@ -75,4 +70,17 @@ if __name__ == "__main__":
 
   ax[2].plot(zL, resStrip, c="Blue", label="cdf", zorder=0)
 
+  # plot function to be estimated by sinc series
+  mapSamp = [map.For(s) for s in sampSort]
+
+  ax[2].plot(mapSamp, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
+
+  zL = Grid1(-8,8, nPlotPoint)
+  resStrip = [
+    1 - (asinh(exp(z)) + 1) / (exp(z) + sqrt(1 + exp(2*z))) - exp(z) / (exp(z) + 1)
+  for z in zL]
+
+  ax[2].plot(zL, resStrip, c="Blue", label="cdf", zorder=0)
+
+  # save the figure
   plot.savefig('1d_dist.png')
