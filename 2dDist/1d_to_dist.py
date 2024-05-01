@@ -2,85 +2,149 @@
 # 1 d _ t o _ d i s t . p y
 #
 
-from math import asinh, exp, log, sinh, sqrt
+from math import asinh, exp, log, sinh
 from matplotlib import pyplot as plot
 
-import Gamma2_1
-from LocUtil import Grid1
-from Mollifier import MolSet
+from Dist import Gamma2_1
+from LocUtil import Grid1, MinMax
 from Sinc import Map
 
 
-###########################
+##############################################################################
 if __name__ == "__main__":
   # constants
-  nSamp = 75
+  nSamp = 1_000
   nPlotPoint = 50
-  xRange = (0,7)
 
   # synthetic data
   samp = [Gamma2_1.Sample() for _ in range(nSamp)]
-  quant = [(k + 0.5)/nSamp for k in range(nSamp)]
+  sampQuant = [(k + 0.5)/nSamp for k in range(nSamp)]
 
   sampSort = sorted(samp)
 
-  # plot CDF
-  fig,ax = plot.subplots(3, figsize=(6.5, 9))
-
-  ax[0].plot(sampSort, quant, '*', c="Maroon", label="samples", zorder=1)
-
-  xL = Grid1(*xRange, nPlotPoint)
-  yL = tuple(Gamma2_1.Cdf(x) for x in xL)
-  ax[0].plot(xL,yL, c="Blue", label="cdf", zorder=0)
-
-  ax[0].set_xlabel('Value')
-  ax[0].set_ylabel('Quantile')
-
-  # plot CDF minus mollifiers
-  molSet = MolSet((0,0), (0,1))
-
-  molF = lambda x: x
-  unitInv = lambda z: exp(z) / (exp(z) + 1)
-
+  # set up problem map
   phi = lambda x: log(sinh(x))
   phiInv = lambda z: asinh(exp(z))
-  map = Map(phi,phiInv)
+  probMap = Map(phi, phiInv)
 
-  shiftQuant = [q - molF(unitInv(map.For(s))) for (q,s) in zip(quant,sampSort)]
-  ax[1].plot(sampSort, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
+  ##############################################################################
+  fig,ax = plot.subplots(3, figsize=(6.5, 9))
 
-  xL = Grid1(*xRange,nPlotPoint)
-  res = [1 - (x + 1) * exp(-x) - sinh(x) / (sinh(x) + 1) for x in xL]
-  ax[1].plot(xL, res, c="Blue", label="cdf", zorder=0)
+  #############################
+  # plot sorted samples on x with CDF
+  ax[0].plot(sampSort, sampQuant, '*', c="Maroon", label="samples", zorder=1)
 
-  # plot CDF minus mollifiers in z
-  mapSamp = [map.For(s) for s in sampSort]
+  minX, maxX = MinMax(sampSort)
+  xL = Grid1(minX,maxX, nPlotPoint)
+  quant = tuple(Gamma2_1.Cdf(x) for x in xL)
 
-  ax[2].plot(mapSamp, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
+  ax[0].plot(xL, quant, c="Blue", label="cdf", zorder=0)
 
+  xCent = probMap.Inv(0)
+  ax[0].plot((xCent,xCent), (0,1), '--', c="Green")
+
+  ax[0].set_xlabel('X Value')
+  ax[0].set_ylabel('Quantile')
+
+  #############################
+  # plot samples on z
+  sampZ = [probMap.For(s) for s in sampSort]
+  ax[1].plot(sampZ, sampQuant, '*', c="Maroon", label="samples", zorder=1)
+
+  minZ,maxZ = probMap.For(minX), probMap.For(maxX)
+  zL = Grid1(minZ, maxZ, nPlotPoint)
+  zQuantL = tuple(Gamma2_1.Cdf(probMap.Inv(z)) for z in zL)
+  ax[1].plot(zL, zQuantL, c="Blue", label="cdf", zorder=0)
+
+  ax[1].plot((0,0), (0,1), '--', c="Green")
+
+  ax[1].set_xlabel('Z Value')
+  ax[1].set_ylabel('Quantile')
+
+  #############################
+  # plot samples on shifted z
+  zCent = (maxZ + minZ) / 2
+
+  phi = lambda x: probMap.For(x) - zCent
+  phiInv = lambda z: probMap.Inv(z + zCent)
+  mapShift = Map(phi, phiInv)
+
+  #############################
+  # plot samples and CDF on the strip
+  sampZ = [mapShift.For(s) for s in sampSort]
+  ax[2].plot(sampZ, sampQuant, '*', c="Maroon", label="samples", zorder=1)
+
+  minZs,maxZs = minZ - zCent, maxZ - zCent
+  zL = Grid1(minZs, maxZs, nPlotPoint)
+  zQuantL = tuple(Gamma2_1.Cdf(mapShift.Inv(z)) for z in zL)
+  ax[2].plot(zL, zQuantL, c="Blue", label="cdf", zorder=0)
+
+  ax[2].plot((minZs, minZs), (0,1), '--', c="Green")
+  ax[2].plot((maxZs, maxZs), (0,1), '--', c="Green")
+
+  ax[2].set_xlabel('Shifted Z Value')
+  ax[2].set_ylabel('Quantile')
+
+  #############################
+  plot.savefig('1d_dist_a.png')
+
+  ##############################################################################
+  fig,ax = plot.subplots(3, figsize=(6.5, 9))
+
+  #############################
+  # plot the mollifyer and the CDF
+  ax[0].plot(xL, quant, c="Maroon")
+
+  molMapFor = lambda y: log(y / (1 - y))
+  molMapInv = lambda z: exp(z) / (1 + exp(z))
+  molMap = Map(molMapFor,molMapInv)
+
+  molYF = lambda y: y**2
+  molXF = lambda x: molYF(molMap.Inv(probMap.For(x)))
+  molX = [molXF(x) for x in xL]
+
+  ax[0].plot(xL, molX, c="Blue", label="cdf", zorder=0)
+
+  #############################
+  # plot the resitual and the sample residuals
+  sampRes = [q - molXF(x) for (x,q) in zip(sampSort,sampQuant)]
+
+  ax[1].plot(sampSort, sampRes, '*', c="Maroon", label="sample residual", zorder=1)
+
+  resX = [q - m for (q,m) in zip(quant,molX)]
+  ax[1].plot(xL, resX, c="Blue", label="cdf - mollifyer", zorder=0)
+
+  #############################
   # plot function to be estimated by sinc series
-  mapSamp = [map.For(s) for s in sampSort]
+  ax[2].plot(sampZ, sampRes, '*', c="Maroon", label="samples", zorder=1)
 
-  ax[2].plot(mapSamp, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
+  zL = Grid1(minZs, maxZs, nPlotPoint)
 
-  zL = Grid1(-8,8, nPlotPoint)
-  resStrip = [
-    1 - (asinh(exp(z)) + 1) / (exp(z) + sqrt(1 + exp(2*z))) - exp(z) / (exp(z) + 1)
-  for z in zL]
+  resZ = lambda z: Gamma2_1.Cdf(mapShift.Inv(z)) - molXF(mapShift.Inv(z))
+  resStrip = [resZ(z) for z in zL]
 
   ax[2].plot(zL, resStrip, c="Blue", label="cdf", zorder=0)
 
-  # plot function to be estimated by sinc series
-  mapSamp = [map.For(s) for s in sampSort]
+  #############################
+  # save figure
+  plot.savefig('1d_dist_b.png')
 
-  ax[2].plot(mapSamp, shiftQuant, '*', c="Maroon", label="samples", zorder=1)
+  ##############################################################################
+  fig,ax = plot.subplots(3, figsize=(6.5, 9))
 
-  zL = Grid1(-8,8, nPlotPoint)
-  resStrip = [
-    1 - (asinh(exp(z)) + 1) / (exp(z) + sqrt(1 + exp(2*z))) - exp(z) / (exp(z) + 1)
-  for z in zL]
+  # #############################
+  # # fit the
+  # ax[0].plot(xL, quant, c="Maroon")
+  #
+  # molMapFor = lambda y: log(y / (1 - y))
+  # molMapInv = lambda z: exp(z) / (1 + exp(z))
+  # molMap = Map(molMapFor,molMapInv)
+  #
+  # molYF = lambda y: y**2
+  # molXF = lambda x: molYF(molMap.Inv(probMap.For(x)))
+  # molX = [molXF(x) for x in xL]
+  #
+  # ax[0].plot(xL, molX, c="Blue", label="cdf", zorder=0)
 
-  ax[2].plot(zL, resStrip, c="Blue", label="cdf", zorder=0)
-
-  # save the figure
-  plot.savefig('1d_dist.png')
+  #############################
+  plot.savefig('1d_dist_c.png')
