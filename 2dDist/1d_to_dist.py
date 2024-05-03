@@ -5,9 +5,9 @@
 from math import asinh, exp, log, sinh
 from matplotlib import pyplot as plot
 
-from Dist import Gamma2_1
+from Dist import Erlang2_1
 from LocUtil import Grid1, MinMax
-from Sinc import Map
+from Sinc import Map, SincFit
 
 
 ##############################################################################
@@ -17,7 +17,8 @@ if __name__ == "__main__":
   nPlotPoint = 50
 
   # synthetic data
-  samp = [Gamma2_1.Sample() for _ in range(nSamp)]
+  dist = Erlang2_1()
+  samp = [dist.Sample() for _ in range(nSamp)]
   sampQuant = [(k + 0.5)/nSamp for k in range(nSamp)]
 
   sampSort = sorted(samp)
@@ -36,7 +37,7 @@ if __name__ == "__main__":
 
   minX, maxX = MinMax(sampSort)
   xL = Grid1(minX,maxX, nPlotPoint)
-  quant = tuple(Gamma2_1.Cdf(x) for x in xL)
+  quant = tuple(dist.Cdf(x) for x in xL)
 
   ax[0].plot(xL, quant, c="Blue", label="cdf", zorder=0)
 
@@ -53,7 +54,7 @@ if __name__ == "__main__":
 
   minZ,maxZ = probMap.For(minX), probMap.For(maxX)
   zL = Grid1(minZ, maxZ, nPlotPoint)
-  zQuantL = tuple(Gamma2_1.Cdf(probMap.Inv(z)) for z in zL)
+  zQuantL = tuple(dist.Cdf(probMap.Inv(z)) for z in zL)
   ax[1].plot(zL, zQuantL, c="Blue", label="cdf", zorder=0)
 
   ax[1].plot((0,0), (0,1), '--', c="Green")
@@ -76,7 +77,7 @@ if __name__ == "__main__":
 
   minZs,maxZs = minZ - zCent, maxZ - zCent
   zL = Grid1(minZs, maxZs, nPlotPoint)
-  zQuantL = tuple(Gamma2_1.Cdf(mapShift.Inv(z)) for z in zL)
+  zQuantL = tuple(dist.Cdf(mapShift.Inv(z)) for z in zL)
   ax[2].plot(zL, zQuantL, c="Blue", label="cdf", zorder=0)
 
   ax[2].plot((minZs, minZs), (0,1), '--', c="Green")
@@ -120,7 +121,7 @@ if __name__ == "__main__":
 
   zL = Grid1(minZs, maxZs, nPlotPoint)
 
-  resZ = lambda z: Gamma2_1.Cdf(mapShift.Inv(z)) - molXF(mapShift.Inv(z))
+  resZ = lambda z: dist.Cdf(mapShift.Inv(z)) - molXF(mapShift.Inv(z))
   resStrip = [resZ(z) for z in zL]
 
   ax[2].plot(zL, resStrip, c="Blue", label="cdf", zorder=0)
@@ -132,19 +133,17 @@ if __name__ == "__main__":
   ##############################################################################
   fig,ax = plot.subplots(3, figsize=(6.5, 9))
 
-  # #############################
-  # # fit the
-  # ax[0].plot(xL, quant, c="Maroon")
-  #
-  # molMapFor = lambda y: log(y / (1 - y))
-  # molMapInv = lambda z: exp(z) / (1 + exp(z))
-  # molMap = Map(molMapFor,molMapInv)
-  #
-  # molYF = lambda y: y**2
-  # molXF = lambda x: molYF(molMap.Inv(probMap.For(x)))
-  # molX = [molXF(x) for x in xL]
-  #
-  # ax[0].plot(xL, molX, c="Blue", label="cdf", zorder=0)
+  #############################
+  # plot sinc fit to data
+  ax[0].plot(sampZ, sampRes, '*', c="Maroon", label="samples", zorder=1)
+
+  nBase = 6
+  fit = SincFit(zip(sampZ,sampRes), (minZs,maxZs),nBase)
+
+  ax[0].plot(fit.sincPoint, fit.weight, 'x', markersize=20, c="Blue")
+
+  yL = fit.Interp(zL)
+  ax[0].plot(zL, yL, c="Blue", label="cdf", zorder=0)
 
   #############################
   plot.savefig('1d_dist_c.png')

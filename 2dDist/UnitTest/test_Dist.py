@@ -17,7 +17,7 @@ class Erling2_1Test(TestCase):
   def test_Erling2_1_0a(self):
     nSamp = 50
     seed = SetSeed()
-    dist = Dist.Erlang2_1
+    dist = Dist.Erlang2_1()
 
     xL = [uniform(0,8) for _ in range(nSamp)]
     yL = [dist.Cdf(x) for x in xL]
@@ -35,7 +35,7 @@ class DistATest(TestCase):
   def test_ExampA_0a(self):
     nSamp = 50
     seed = SetSeed()
-    dist = Dist.ExampA
+    dist = Dist.ExampA()
 
     xL = [uniform(0,1) for _ in range(nSamp)]
     yL = [dist.Cdf(x) for x in xL]

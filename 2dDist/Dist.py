@@ -11,8 +11,7 @@ from scipy.special import lambertw
 
 
 ###############################################################
-# TODO: Make this a true interface
-class Dist:
+class Dist(object):
   def Sample(self):
     y = uniform(0, 1)
     return self.InvCdf(y)
@@ -21,15 +20,18 @@ class Dist:
 # This class defines the Erlang Distribution where shape (k) = 2 and rate (lambda) = 1.
 # That is PDF = x * exp(-x), and the CDF = 1 - (x + 1)*exp(-x)
 class Erlang2_1(Dist):
-  def Pdf(x):
+  def __init__(self):
+    pass
+
+  def Pdf(self, x):
     y = x * exp(-x)
     return y
 
-  def Cdf(x):
+  def Cdf(self, x):
     y = 1 - (1 + x)*exp(-x)
     return y
 
-  def InvCdf(y):
+  def InvCdf(self, y):
     e = exp(1)
     x = -lambertw((y - 1) / e, k=-1) - 1
     return x
@@ -38,15 +40,18 @@ class Erlang2_1(Dist):
 #######################################
 # Example A
 class ExampA(Dist):
-  def Pdf(x):
+  def __init__(self):
+    pass
+
+  def Pdf(self, x):
     y = 6*x * (1 - x)
     return y
 
-  def Cdf(x):
+  def Cdf(self, x):
     y = (3 - 2*x)*x*x
     return y
 
-  def InvCdf(y):
+  def InvCdf(self, y):
     temp1 = sqrt(y)
     temp3 = sqrt(1 - y)
     temp8 = atan2(2*temp1*temp3, 1 - 2*y)
@@ -57,4 +62,3 @@ class ExampA(Dist):
     x = (temp11*temp12)/2 - temp10/2 + 1/2
 
     return x
-
