@@ -50,3 +50,21 @@ class DistATest(TestCase):
       print(f'Erling2_1_0a test failed (seed = {seed})')
       self.fail()
 
+class DistBTest(TestCase):
+  def test_ExampB_0a(self):
+    nSamp = 50
+    seed = SetSeed()
+    dist = Dist.ExampB()
+
+    xL = [uniform(0,2) for _ in range(nSamp)]
+    yL = [dist.Cdf(x) for x in xL]
+    xEstL = [dist.InvCdf(y) for y in yL]
+
+    err = [abs(xEst - x) for (xEst,x) in zip(xEstL,xL)]
+
+    relErr = [e/x for (e,x) in zip(err,xL)]
+    maxRelErr = max(relErr)
+
+    if 1e-10 <= maxRelErr:
+      print(f'Erling2_1_0a test failed (seed = {seed})')
+      self.fail()

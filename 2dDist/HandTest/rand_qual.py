@@ -2,12 +2,19 @@
 # r a n d _ q u a l . p y
 #
 
+# This script tests that the random number generator is working (more like is being used
+# properly).
+#
+# It also produces a graph that shows the asymptotic fit for the RMS and the maximum
+# deviation from the model CDF as a function of *n*.  This could be useful in the writeup.
+
 from math import sqrt
 from matplotlib import pyplot as plot
 from random import uniform
 
 from LocMath import RandLog
 from PlotFit import PlotFitLogLog
+
 
 if __name__ == "__main__":
   # constants

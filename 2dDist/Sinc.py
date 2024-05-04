@@ -59,27 +59,11 @@ def SincFit(samp, xRange, nBase):
     a.append(interpVal)
     b.append(sampVal)
 
-  # for i in range(nBase):
-  #   xL = [sz for (sz,_) in samp]
-  #   val = [a[j][i] for j in range(len(samp))]
-  #   plot.plot(xL, val, '*', c="blue")
-
-  plot.show()
-
   # solve for weights
+  # TODO: Add error checking
   temp,_,_,_ = lstsq(a, b)
   weight = tuple(temp)
 
   result = SincApprox(xRange,nBase,weight)
 
   return result
-
-
-def FindShift(lowX,highX, mapFor):
-  shift = 0
-
-  for i in range(5):
-    lowZ = mapFor(lowX)
-    highZ = mapFor(highX)
-
-    mid = (lowZ + highZ) / 2

@@ -5,9 +5,11 @@
 # This file contains several example distributions
 
 from collections import namedtuple
-from math import atan2, cos, exp, sin, sqrt
+from math import atan2, cos, exp, pi, sin, sqrt
 from random import uniform
 from scipy.special import lambertw
+
+from LocMath import Bisect
 
 
 ###############################################################
@@ -61,4 +63,31 @@ class ExampA(Dist):
     temp12 = sin(temp9)
     x = (temp11*temp12)/2 - temp10/2 + 1/2
 
+    return x
+
+#######################################
+# Example B
+class ExampB(Dist):
+  def __init__(self):
+    pass
+
+  def Pdf(self, x):
+    y = 3/2 * x * (1-x) * (1 - cos(3/2 * pi * x))
+    return y
+
+  def Cdf(self, x):
+    t1 = x**2
+    t5 = pi**2
+    t9 = (3 * pi * x) / 2
+    t10 = sin(t9)
+    t13 = cos(t9)
+    t25 = \
+      (t10 * (-16 + t5 * (18 * t1 - 36 * x)) -
+        9 * pi * ((8 * t13 * (-x + 1)) / 3 - 8 / 3 + t5 * (x - 3) * t1)) / \
+      (36 * t5 * pi)
+    
+    return t25
+
+  def InvCdf(self, y):
+    x = Bisect(self.Cdf, y, (0,2))
     return x

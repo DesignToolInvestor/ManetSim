@@ -6,7 +6,7 @@ from math import asinh, exp, log, sinh
 from matplotlib import pyplot as plot
 
 from Dist import Erlang2_1
-from LocUtil import Grid1, MinMax
+from LocUtil import Grid1, MinMax, SetSeed
 from Sinc import Map, SincFit
 
 
@@ -16,7 +16,16 @@ if __name__ == "__main__":
   nSamp = 1_000
   nPlotPoint = 50
 
+  nBase = 6
+
+  givenSeed = None
+  seedDig = 3
+
   # synthetic data
+  seed = SetSeed(givenSeed, digits=seedDig)
+  if givenSeed is None:
+    print(f'Seed = {seed}')
+
   dist = Erlang2_1()
   samp = [dist.Sample() for _ in range(nSamp)]
   sampQuant = [(k + 0.5)/nSamp for k in range(nSamp)]
@@ -135,12 +144,12 @@ if __name__ == "__main__":
 
   #############################
   # plot sinc fit to data
-  ax[0].plot(sampZ, sampRes, '*', c="Maroon", label="samples", zorder=1)
+  ax[0].plot(sampZ, sampRes, '.', c="Maroon", label="samples", zorder=1)
 
-  nBase = 6
-  fit = SincFit(zip(sampZ,sampRes), (minZs,maxZs),nBase)
+  resSamp = tuple(zip(sampZ,sampRes))
+  fit = SincFit(resSamp, (minZs,maxZs),nBase)
 
-  ax[0].plot(fit.sincPoint, fit.weight, 'x', markersize=20, c="Blue")
+  ax[0].plot(fit.sincPoint, fit.weight, 'o', markersize=8, c="Blue")
 
   yL = fit.Interp(zL)
   ax[0].plot(zL, yL, c="Blue", label="cdf", zorder=0)
