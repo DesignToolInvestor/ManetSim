@@ -89,5 +89,5 @@ class ExampB(Dist):
     return t25
 
   def InvCdf(self, y):
-    x = Bisect(self.Cdf, y, (0,2))
+    x = Bisect(self.Cdf, y, (0,2), tol=1e-14)
     return x

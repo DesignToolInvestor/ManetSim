@@ -1,13 +1,14 @@
 #
-# s i n g _ f i t . p y
+# s i n c _ f i t _ a . p y
 #
-import random
+
 from math import exp, log
 from matplotlib import pyplot as plot
 from random import uniform, gauss
 
-from Sinc import SincFit
+from Sinc import SincFitNoMap
 from LocUtil import Grid1, UnZip, MinMax
+
 
 if __name__ == "__main__":
   # constants
@@ -27,7 +28,7 @@ if __name__ == "__main__":
   zRange = MinMax(sampZ)
 
   samp = list(zip(sampZ,sampVal))
-  fit = SincFit(samp, zRange,6)
+  fit = SincFitNoMap(samp, zRange,6)
 
   # do plot
   fig,ax = plot.subplots()

@@ -7,12 +7,12 @@ from scipy.linalg import solve
 
 
 # TODO:  Is it worth it to use sympy to get exact rational coefficients
-def Hermite(lowVal, highVal, end):
+def Hermite(lowVal, highVal, xRange):
   lowOrd = len(lowVal) - 1
   highOrd = len(highVal) - 1
   totOrd = lowOrd + highOrd + 1
 
-  low,high = end
+  low,high = xRange
 
   # each row of the system is sum(m[i,j]*a[i], i) = r[j]
   m = []
@@ -42,23 +42,22 @@ def Hermite(lowVal, highVal, end):
   return tuple(a)
 
 
-def MolSet(order, end):
+def MolSet(order):
   lowOrd,highOrd = order
-  totOrd = lowOrd + highOrd + 1
 
-  low,high = end
+  xRange = (0,1)
   result = []
 
   highVal = [0 for _ in range(highOrd + 1)]
   for derivDeg in range(0, lowOrd + 1):
     lowVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, lowOrd + 1)]
-    poly = Hermite(lowVal, highVal, end)
+    poly = Hermite(lowVal, highVal, xRange)
     result.append(poly)
 
   lowVal = [0 for _ in range(lowOrd + 1)]
   for derivDeg in range(0, highOrd + 1):
     highVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, highOrd + 1)]
-    poly = Hermite(lowVal, highVal, end)
+    poly = Hermite(lowVal, highVal, xRange)
     result.append(poly)
 
   return result

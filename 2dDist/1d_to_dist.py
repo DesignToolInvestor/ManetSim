@@ -7,8 +7,8 @@ from matplotlib import pyplot as plot
 
 from Dist import Erlang2_1
 from LocUtil import Grid1, MinMax, SetSeed
-from Sinc import Map, SincFit
-
+from Sinc import SincFitNoMap
+from Map import
 
 ##############################################################################
 if __name__ == "__main__":
@@ -147,7 +147,7 @@ if __name__ == "__main__":
   ax[0].plot(sampZ, sampRes, '.', c="Maroon", label="samples", zorder=1)
 
   resSamp = tuple(zip(sampZ,sampRes))
-  fit = SincFit(resSamp, (minZs,maxZs),nBase)
+  fit = SincFitNoMap(resSamp, (minZs,maxZs),nBase)
 
   ax[0].plot(fit.sincPoint, fit.weight, 'o', markersize=8, c="Blue")
 
