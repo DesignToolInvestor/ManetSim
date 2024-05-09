@@ -2,23 +2,45 @@
 # 2 d _ t o _ c o n d . p y
 #
 
-from scipy import e, lambertw
-
+from math import log
 from random import uniform
+from matplotlib import pyplot as plot
 
-# This produces a sample in the Gamma distribution where shape=2 and rate=1.
-# That is PDF = x * exp(-x)
-def Gama2_1():
-  cdf = uniform(0,1)
-  val = -lambertw((cdf - 1)/e) - 1
+from LocMath import Bisect
+from LocUtil import UnZip
+
+
+###############################################################
+def XSamp():
+
+
+
+
+
+
+
+
+
 
 def Sample():
-  x = uniform(0,20)
-  y =
+  x = XSamp()
+  y = YSamp(x)
+
+  return (x,y)
 
 
+###############################
 if __name__ == "__main__":
   # constants
-  nSample = 2_000
+  nSample = 10_000
 
+  xDist =
   # synthetic data
+  samp = tuple(Sample() for _ in range(nSample))
+
+  # plot the samples
+  plot.subplots(figsize=(6.5, 6.5))
+
+  plot.plot(*UnZip(samp), '.', color='Maroon')
+
+  plot.show()
