@@ -133,10 +133,9 @@ class ExampB(BiSectDist):
 
 
 #######################################
-class SkewHump(BiSectDist):
+class SkewHump(object):
   def __init__(self):
     pass
-
 
   # TODO: Accuracy is probably limited to around 1e-11 (or a little better)
   def _Area(self, k):
@@ -147,13 +146,11 @@ class SkewHump(BiSectDist):
 
     return result
 
-
   def Pdf(self, x, k):
     area = self._Area(k)
     y =  k * x * (1 - x) / (1 + (k - 1) * x) ** 2 / area
 
     return y
-
 
   def Cdf(self, x, k):
     if abs(k - 1) < 0.03:
@@ -177,3 +174,15 @@ class SkewHump(BiSectDist):
       y = ((t7 * (t1*x + k - x + 1) - x * (t5 + k + 1) * t4) / ((t16 * (k + 1) - 2 * k + 2) * t6))
 
     return y
+
+  # TODO:  Code resues issue
+  def InvCdf(self, y, k, tol=1e-14):
+    func = lambda y: self.Cdf(y,k)
+    x = Bisect(func, y, (0, 1), tol=tol)
+    return x
+
+  def Sample(self, k, tol=1e-14):
+    y = uniform(0,1)
+    x = self.InvCdf(y, k, tol)
+
+    return x
