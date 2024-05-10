@@ -14,3 +14,4 @@ def SampCdf2(samp, point):
       count += 1
 
   return count / len(samp)
+
