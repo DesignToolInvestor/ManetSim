@@ -17,6 +17,7 @@ class SincD(Function):
   # TODO: derive a bound on the error of the series and use it for picking the switch over
   def _eval_evalf(self, prec):
     dOrd,arg = self.args
+
     if dOrd == 0:
       argVal = (pi*arg)._eval_evalf(prec)
       if 1e-2 < abs(argVal):
@@ -27,3 +28,10 @@ class SincD(Function):
         val = series.evalf(prec)
 
     return val
+
+  def fdiff(self, argIndex):
+    if argIndex != 2:
+      raise Exception('differentiation with respect to order of differentiation not supported')
+
+    dOrd,arg = self.args
+    return SincD(dOrd + 1, arg)

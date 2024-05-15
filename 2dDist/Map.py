@@ -4,31 +4,34 @@
 
 # This file creates the most common maps
 
-from attrs import define, field
-from collections import namedtuple
-from math import exp, log
-
-@define
-class Map:
-  z0 = field()
-  xRange = field()
-
-  forward = field()
-  inverse = field()
-  deriv = field()
+from sympy import diff, exp, log
 
 
-class LogRatio(Map):
-  def __init__(self, xRange=(0,1), z0=None):
+
+###############################################################
+class LogRatio(object):
+  def __init__(self, xSym, zSym, xRange=(0,1), z0=0, zScale=1):
     xMin,xMax = xRange
+    if xMax <= xMin:
+      raise ValueError(f'xMin should be less than xMax (received {xRange})')
 
-    if z0 is None:
-      z0 = (xMin + xMax) / 2
-    elif (z0 < xMin) or (xMax < z0):
-      raise Exception('Point that maps to zero must be within xRange')
+    self.xSym = xSym
+    self.zSym = zSym
+    
+    self.map = zScale * (log((xSym - xMin) / (xMax - xSym)) + z0)
 
-    forwardF = lambda x: log((x - xMin) / (xMax - x)) - z0
-    inverseF = lambda z: (xMax - xMin) * exp(z + z0) / (1 + exp(z + z0)) + xMin
-    derivF = lambda x: (xMax - xMin) / (x - xMin) / (xMax - x)
+    zss = zSym/zScale - z0
+    self.inv = (xMax * exp(zss) + xMin) / (1 + exp(zss))
 
-    super().__init__(z0, xRange, forwardF,inverseF, derivF)
+  def MapExp(self):
+    return self.map
+
+  def InvExp(self):
+    return self.inv
+  
+  def Deriv(self, ord):
+    result = self.map.diff(self.xSym, ord).simplify()
+    return result
+
+
+###############################################################
