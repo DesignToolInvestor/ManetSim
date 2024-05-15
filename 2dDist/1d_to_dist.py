@@ -7,7 +7,7 @@ from matplotlib import pyplot as plot
 
 from Dist import Erlang2_1
 from LocUtil import Grid1, MinMax, SetSeed
-from Sinc import SincFitNoMap
+from Vestigial.Sinc import SincFitNoMap
 from Map import
 
 ##############################################################################

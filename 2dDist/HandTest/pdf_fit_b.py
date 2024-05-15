@@ -1,5 +1,5 @@
 #
-# s i n g _ f i t _ b . p y
+# p d f _ f i t _ b . p y
 #
 
 # system packages
@@ -9,7 +9,7 @@ from matplotlib import pyplot as plot
 import Dist
 from LocUtil import Grid1, SetSeed, UnZip
 from Map import LogRatio
-from Sinc import SincFit
+from Vestigial.Sinc import SincFitDeriv
 
 
 if __name__ == "__main__":
@@ -37,7 +37,7 @@ if __name__ == "__main__":
   # plot.show()
 
   mapProb = LogRatio((0,2))
-  fit = SincFit(sampVal, mapProb, (1,1), (0,0), nSinc)
+  fit = SincFitDeriv(sampVal, mapProb, (1,1), nSinc)
 
   ##############################################
   # plot results
@@ -72,4 +72,4 @@ if __name__ == "__main__":
           f'h = {fit.h:.3f}')
   plot.text(1.2, 0.4, text)
 
-  plot.savefig(f'Data/ExampB/dist_fit_b_{seed}_{nSamp}_{nSinc}.png')
+  plot.savefig(f'Data/EampBPdf/dist_fit_b_{seed}_{nSamp}_{nSinc}.png')

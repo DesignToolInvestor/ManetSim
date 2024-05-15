@@ -6,7 +6,7 @@ from math import exp, log
 from matplotlib import pyplot as plot
 from random import uniform, gauss
 
-from Sinc import SincFitNoMap
+from Vestigial.Sinc import SincFitNoMap
 from LocUtil import Grid1, UnZip, MinMax
 
 
