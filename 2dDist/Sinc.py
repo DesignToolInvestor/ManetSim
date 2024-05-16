@@ -4,6 +4,8 @@
 
 from sympy import Function, pi, sin
 
+from LocUtil import MinMax
+
 class SincD(Function):
   # TODO: Add check for negative dOrd
   # TODO: Should it evaluate if arg is an integer and dOrd is zero ???
@@ -35,3 +37,28 @@ class SincD(Function):
 
     dOrd,arg = self.args
     return SincD(dOrd + 1, arg)
+
+class SincBasis(Function):
+  @classmethod
+  def eval(cls, , arg):
+    pass
+
+def DistFit(samp, map, xSym,zSym, nullOrd, asym):
+  # parse arguments
+  nSamp = len(samp)
+
+  # make CDF
+  sampSort = sorted(samp)
+  quant = [(k + 0.5) / nSamp for k in range(nSamp)]
+
+  # map to z
+  mapF = map.MapExp().lambdafy(xSym)
+  zL = [mapF(x) for x in sampSort]
+
+  # shift
+  minZ,maxZ = MinMax(z)
+  z0 = (maxZ + minZ) / 2
+
+  zS = [z - z0 for z in zL]
+
+  #

@@ -63,8 +63,25 @@ class TestLogRatio(TestCase):
     invAns = -1 / (1 + exp(z/2 - 1))
     self.assertTrue(SymEq(invExp, invAns))
 
+  #######################################
   def test_InvExp_0a(self):
     self.fail()
 
-  def test_deriv(self):
-    self.fail()
+  #######################################
+  def test_DerivExp_0a(self):
+    x = Symbol('x')
+    z = Symbol('z')
+    map = LogRatio(x, z)
+
+    deriv = map.DerivExp(1)
+    derivTrue = 1 / x / (1-x)
+    self.assertTrue(SymEq(deriv, derivTrue))
+
+  def test_DerivExp_0b(self):
+    x = Symbol('x')
+    z = Symbol('z')
+    map = LogRatio(x, z, (-1,1), 1, 2)
+
+    deriv = map.DerivExp(1)
+    derivTrue = -4 / (x*x - 1)
+    self.assertTrue(SymEq(deriv, derivTrue))

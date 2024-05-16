@@ -29,7 +29,7 @@ class LogRatio(object):
   def InvExp(self):
     return self.inv
   
-  def Deriv(self, ord):
+  def DerivExp(self, ord):
     result = self.map.diff(self.xSym, ord).simplify()
     return result
 
