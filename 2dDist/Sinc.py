@@ -2,9 +2,8 @@
 # S i n c . p y
 #
 
-from sympy import Function, pi, sin
-
-from LocUtil import MinMax
+from sympy import Symbol, Function, lambdify, pi, sin
+from numpy import sinc
 
 class SincD(Function):
   # TODO: Add check for negative dOrd
@@ -38,27 +37,39 @@ class SincD(Function):
     dOrd,arg = self.args
     return SincD(dOrd + 1, arg)
 
-class SincBasis(Function):
-  @classmethod
-  def eval(cls, , arg):
-    pass
 
-def DistFit(samp, map, xSym,zSym, nullOrd, asym):
-  # parse arguments
-  nSamp = len(samp)
+##################################################################################
+class SincApprox(object):
+  def __init__(self, map_, zRange, nSinc, sincWeight, nullZ, molZ, molWeight, maxDeriv=0):
+    self.map_ = map_
 
-  # make CDF
-  sampSort = sorted(samp)
-  quant = [(k + 0.5) / nSamp for k in range(nSamp)]
+    self.nSinc = nSinc
+    minZ,maxZ = zRange
+    self.h = (maxZ - minZ) / (nSinc - 1)
 
-  # map to z
-  mapF = map.MapExp().lambdafy(xSym)
-  zL = [mapF(x) for x in sampSort]
+    self.sincPointZ = [k * self.h + minZ for k in range(nSinc)]
 
-  # shift
-  minZ,maxZ = MinMax(z)
-  z0 = (maxZ + minZ) / 2
+    self.sincWeight = sincWeight
 
-  zS = [z - z0 for z in zL]
+    self.nullZ = nullZ
 
-  #
+    self.molZ = molZ
+    self.molWeight = molWeight
+
+    self.maxDeriv = maxDeriv
+
+  def Interp(self, xPoint):
+    result = []
+
+    mapF = lambdify(map.XSym(), self.map_.ForExp(), "math")
+
+    for x in xPoint:
+      z = mapF(x)
+
+      val = self.molX(x)
+      for k in range(self.nSinc):
+        val += self.sincWeight[k] * sinc((z - self.sincPointZ[k]) / self.h) * self.nullZ(z)
+
+      result.append(val)
+
+    return result

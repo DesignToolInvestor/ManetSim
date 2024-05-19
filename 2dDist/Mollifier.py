@@ -2,69 +2,69 @@
 # M o l l i f i e r . p y
 #
 
-from sympy import symbols, factor
-from scipy.linalg import solve
+# This file contains functions that compute the set of mollifyers that represent the bases of the
+# of the space of end conditions for a specified order of derivatives. 
+
+from sympy import Symbol, exp, solve
 
 
-# TODO:  Is it worth it to use sympy to get exact rational coefficients
-def Hermite(lowVal, highVal, xRange):
-  lowOrd = len(lowVal) - 1
-  highOrd = len(highVal) - 1
-  totOrd = lowOrd + highOrd + 1
+def Hermite(lowVal, highVal, xRange, ySym):
+  leftOrd = len(lowVal) - 1
+  rightOrd = len(highVal) - 1
+  totOrd = leftOrd + rightOrd + 1
 
-  low,high = xRange
+  xMin,xMax = xRange
 
-  # each row of the system is sum(m[i,j]*a[i], i) = r[j]
-  m = []
-  r = []
+  # set up
+  coef = [Symbol(f'a{i}') for i in range(totOrd + 1)]
+  form = sum(coef[i] * ySym ** i for i in range(totOrd + 1))
+  constraint = []
 
-  # The polynomial is sum(c[i]*a[i] * x**p[i])
-  p = [derivDeg for derivDeg in range(totOrd + 1)]
-  c = [1 for _ in range(totOrd + 1)]
+  # Do left side
+  poly = form
+  for dOrd in range(leftOrd + 1):
+    constraint.append(poly.subs(ySym, xMin) - lowVal[dOrd])
+    poly = poly.diff(ySym).simplify()
 
-  for derivDeg in range(max(lowOrd,highOrd) + 1):
-    if derivDeg <= lowOrd:
-      temp = [c * low**p for (c,p) in zip(c,p)]
-      m.append(temp)
-      r.append(lowVal[derivDeg])
+  # Do right side
+  poly = form
+  for dOrd in range(rightOrd + 1):
+    constraint.append(poly.subs(ySym, xMax) - highVal[dOrd])
+    poly = poly.diff(ySym).simplify()
 
-    if derivDeg <= highOrd:
-      temp = [c * high**p for (c,p) in zip(c,p)]
-      m.append(temp)
-      r.append(highVal[derivDeg])
-
-    # differentiate the polynomial
-    c = [c*p for (c,p) in zip(c,p)]
-    p = [p - 1 if 0 < p else 0 for p in p]
-
-  a = solve(m,r)
-
-  return tuple(a)
-
-
-def MolSet(order):
-  lowOrd,highOrd = order
-
-  xRange = (0,1)
-  result = []
-
-  highVal = [0 for _ in range(highOrd + 1)]
-  for derivDeg in range(0, lowOrd + 1):
-    lowVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, lowOrd + 1)]
-    poly = Hermite(lowVal, highVal, xRange)
-    result.append(poly)
-
-  lowVal = [0 for _ in range(lowOrd + 1)]
-  for derivDeg in range(0, highOrd + 1):
-    highVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, highOrd + 1)]
-    poly = Hermite(lowVal, highVal, xRange)
-    result.append(poly)
+  # solve the system
+  coefVal = solve(constraint, coef)
+  result = form.subs(coefVal).factor()
 
   return result
 
 
-if __name__ == "__main__":
-  molL = MolSet((1,1), (0,1))
+# Returns a flat list of the basis mollifiers with derivative values equal to one from the zeroth
+# derivative upto the specified derivative order.
+def MolSetZ(zSym, derivOrd):
+  # parse arg
+  leftOrd, rightOrd = derivOrd
 
-  for mol in molL:
-    print(mol)
+  # set up
+  ySym = Symbol('y')
+  xRange = (0,1)
+  invMap = exp(zSym) / (1 + exp(zSym))
+
+  result = []
+
+  # do left hand molifyers
+  highVal = [0 for _ in range(rightOrd + 1)]
+  for derivDeg in range(0, leftOrd + 1):
+    lowVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, leftOrd + 1)]
+    polyY = Hermite(lowVal, highVal, (0,1), ySym)
+    polyZ = polyY.subs(ySym, invMap).factor()
+    result.append(polyZ)
+
+  lowVal = [0 for _ in range(leftOrd + 1)]
+  for derivDeg in range(0, rightOrd + 1):
+    highVal = [0 for _ in range(derivDeg)] + [1] + [0 for _ in range(derivDeg + 1, rightOrd + 1)]
+    polyY = Hermite(lowVal, highVal, xRange, ySym)
+    polyZ = polyY.subs(ySym, invMap).factor()
+    result.append(polyZ)
+
+  return result
