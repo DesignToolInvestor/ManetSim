@@ -47,11 +47,11 @@ class LogRatio(object):
 
   def NullLeftX(self):
     xMin, xMax = self.xRange
-    return (self.xSym - xMin) / sqrt(self.zScale / (xMax - xMin))
+    return (self.xSym - xMin) / sqrt(self.zScale * (xMax - xMin))
 
   def NullRightX(self):
     xMin, xMax = self.xRange
-    return (xMax - self.xSym) / sqrt(self.zScale / (xMax - xMin))
+    return (xMax - self.xSym) / sqrt(self.zScale * (xMax - xMin))
 
   def NullLeftZ(self):
     xMin, xMax = self.xRange
@@ -59,7 +59,8 @@ class LogRatio(object):
     zSym = self.zSym
     z0 = self.z0
 
-    result = sqrt(xMax - xMin) * exp(zSym/scale) / sqrt(scale) / (exp(zSym/scale) + exp(z0/scale))
+    zss = zSym/scale - z0
+    result = ((xMax - xMin) * exp(zss) + 2*xMin) / sqrt(scale * (xMax - xMin)) / (1 + exp(zss))
     return result
 
   def NullRightZ(self):
@@ -68,7 +69,8 @@ class LogRatio(object):
     zSym = self.zSym
     z0 = self.z0
 
-    result = sqrt(xMax - xMin) * exp(z0/scale) / sqrt(scale) / (exp(zSym/scale) + exp(z0/scale))
+    zss = zSym/scale - z0
+    result = (xMax - xMin) / sqrt(scale * (xMax - xMin)) / (1 + exp(zss))
     return result
 
   def XSym(self):
