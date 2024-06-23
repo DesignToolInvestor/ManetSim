@@ -13,7 +13,7 @@ from LocUtil import Grid1
 
 class DistATest(TestCase):
   nPoint = 50
-  fileName = '..\\dist_a.dill'
+  fileName = '../dist_a.dill'
 
   def IsClose(self, aL, bL):
     self.assertEqual(len(aL), len(bL))
