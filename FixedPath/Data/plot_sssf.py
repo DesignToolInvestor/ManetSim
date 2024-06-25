@@ -84,10 +84,10 @@ if __name__ == "__main__":
 
     # read log
     with open(fileName, "r") as file:
-        link = file.readlines()
+        line = file.readlines()
 
     # pattern match data
-    temp = [eval(l) for l in link]
+    temp = [eval(l) for l in line]
     infoL = [info for info in temp if (info[2] is not None) and (info[2][1] is not None)]
 
     netInfo,capInfo,result = UnZip(infoL)
