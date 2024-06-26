@@ -1,5 +1,5 @@
 #
-# t e s t _ Dist. p y
+# t e s t _ D i s t . p y
 #
 
 from unittest import TestCase
