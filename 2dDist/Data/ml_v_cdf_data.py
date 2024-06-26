@@ -42,7 +42,7 @@ if __name__ == "__main__":
   maxSamp = 300 - 185
 
   aTrue = 0.3
-  fileName = 'DistA_0.3.log'
+  fileName = 'temp.log'
 
   runTime = 2*60*60
   logInterval = 30
