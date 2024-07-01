@@ -115,7 +115,7 @@ class ExampB(BiSectDist):
     pass
 
   def Pdf(self, x):
-    y = 3/2 * x * (1-x) * (1 - cos(3/2 * pi * x))
+    y = 3/4 * x * (2 - x) * (1 - cos(3/2 * pi * x))
     return y
 
   def Cdf(self, x):
