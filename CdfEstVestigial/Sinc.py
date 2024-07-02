@@ -67,6 +67,8 @@ class SincApprox(object):
       z = mapF(x)
 
       val = self.molX(x)
+
+      # TODO:  numpy.sin is scaled by 1/pi ... this is a bug !!!
       for k in range(self.nSinc):
         val += self.sincWeight[k] * sinc((z - self.sincPointZ[k]) / self.h) * self.nullZ(z)
 
