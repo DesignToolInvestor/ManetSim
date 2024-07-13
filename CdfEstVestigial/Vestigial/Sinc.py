@@ -5,7 +5,6 @@
 # system packages
 from numpy import sinc
 
-from matplotlib import pyplot as plot
 from scipy.linalg import lstsq
 
 # local files

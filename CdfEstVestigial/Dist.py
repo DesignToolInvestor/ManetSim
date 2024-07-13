@@ -108,8 +108,12 @@ class Hump(Dist):
 
     return x
 
+
 #######################################
 # Example B
+
+# TODO:  The has been superseded by the class in CdfFit/ExampB
+
 class ExampB(BiSectDist):
   def __init__(self):
     pass
