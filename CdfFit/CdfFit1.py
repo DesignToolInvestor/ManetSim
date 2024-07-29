@@ -4,13 +4,11 @@
 
 from math import exp, log
 
-from LocSinc import Sinc
 from LocUtil import Sub
 
 
 def EstAsym(sampX, probMap):
   sampZ = [probMap.Forward(x) for x in sampX]
-
 
 
 # TODO:  add scaling so as to minimize the RMS residual
