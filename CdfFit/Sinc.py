@@ -44,3 +44,9 @@ def Interp(sincPoint, grid):
     result.append(val)
 
   return result
+
+def Quad(sincPoint):
+  _,sincV = UnZip(sincPoint)
+  result = sum(sincV)
+
+  return result
