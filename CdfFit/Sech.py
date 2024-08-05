@@ -1,5 +1,5 @@
 #
-# Sech.py
+# S e c h . p y
 #
 
 # This file contains functions for preforming Sech approximations.
@@ -12,5 +12,3 @@ def Sech(z, h,beta):
   result = k1 / cosh(k2 * z)
 
   return result
-
-def

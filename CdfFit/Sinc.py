@@ -4,11 +4,11 @@
 
 # This file defines functions for fitting to sinc approximations to noise data.
 
-from math import floor, ceil
 from numpy import sinc
 from scipy.linalg import lstsq
 
 from LocUtil import Grid1, MinMax, UnZip
+
 
 def FitLstSqr(samp, zRange,nSinc):
   sampZ, sampV = UnZip(samp)
@@ -33,20 +33,43 @@ def FitLstSqr(samp, zRange,nSinc):
   return (tuple(zip(sincZ,sincV)), residue, condNum)
 
 
-def Interp(sincPoint, grid):
-  h = sincPoint[1][0] - sincPoint[0][0]  # TODO:  the goal is to make an ADT (automatic data type)
+def InterpZ(sincZ, sincV, grid):
+  h = sincZ[1] - sincZ[0]
 
   result = []
   for z in grid:
     val = 0
-    for (sp, sv) in sincPoint:
+    for (sp, sv) in zip(sincZ,sincV):
       val += sv * sinc((z - sp) / h)
     result.append(val)
 
   return result
 
-def Quad(sincPoint):
+def QuadZ(sincPoint):
   _,sincV = UnZip(sincPoint)
   result = sum(sincV)
 
   return result
+
+
+###############################################################
+# Stuff to work on a Sinc approximation type
+# class SincApp(object):
+#   def __init__(self):
+#     pass
+#
+#   def Interp(self, grid):
+#     sincX = sincInfo['sincX']
+#     sincV = sincInfo['sincV']
+#     map = sincInfo['map']
+#
+#     sincZ = tuple(map.Forward(x) for x in sincX)
+#
+#     result = []
+#     for z in grid:
+#       val = 0
+#       for (sz, sv) in zip(sincZ,sincV):
+#         val += sv * sinc((z - sz) / h)
+#       result.append(val)
+#
+#     return result
