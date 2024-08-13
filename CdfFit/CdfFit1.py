@@ -6,7 +6,7 @@ import sympy as sp
 import cvxpy as cp
 
 from math import exp, log
-from numpy import sinc
+
 
 from LocUtil import Grid1, MinMax, Sub
 
@@ -36,36 +36,5 @@ def EstAsym(sampX, map_):
   b1,b0 = ToLimProj(rightSampZ, rightLoqQ)
 
   return (a0,a1, b0,b1)
-
-
-def MleZ(sampX, map_, nSinc):
-  # process arguments
-  nSamp = len(sampX)
-  sampSort = sorted(sampX)
-
-  # Analize the map
-  zSym = map_.zSym
-  xSym = map_.xSym
-
-  jacobSym = map_.invSym.diff(zSym).factor()
-  jacob = sp.lambdify(zSym, jacobSym)
-
-  # map samples to z
-  sampZ = tuple(map_.Forward(x) for x in sampSort)
-
-  # desnity weight
-  weight = tuple(jacob(z) for z in sampZ)
-
-  # setup sinc point
-  sincVal = cp.Variable(nSinc)
-  zMin,zMax = MinMax(sampZ)
-
-  h = (zMax - zMin) / (nSinc - 1)
-  sincZ = Grid1(zMin,zMax, nSinc)
-
-  # setup cost function
-  logLike = lambda z: \
-    cp.log(sum(sv * sinc((z - sz) / h) for (sz, sv) in zip(sincZ, sincVal)))
-  objective = cp.Maximize(sum(logLike(z) * weight(z) for z in sampZ))
 
 
