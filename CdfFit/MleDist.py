@@ -17,7 +17,6 @@ from Sinc import InterpZ
 
 def DistZ(sampX, map_, nSinc):
   # process arguments
-  nSamp = len(sampX)
   sampSort = sorted(sampX)
 
   # Analize the map
@@ -44,13 +43,16 @@ def DistZ(sampX, map_, nSinc):
   objective = cp.Maximize(sum(logLike(z) * jacob(z) for z in sampZ))
 
   # setup constraints
-  constEach = list(0 <= sv for sv in sincVal)
+  constEach = tuple(0 <= sv for sv in sincVal)
   constArea = h * sum(sv for (sz, sv) in zip(sincZ, sincVal)) == 1
-  const = constEach + [constArea]
+  const = constEach + (constArea,)
 
   # solve the problem
   prob = cp.Problem(objective, const)
-  prob.solve()
+  print(f'Num. Constraints = {len(prob.constraints)}')
+  print(prob.constraints)
+
+  prob.solve(verbose=True)
 
   sincV = list(sincVal.value)
   sincPoint = tuple(zip(sincZ, sincV))
