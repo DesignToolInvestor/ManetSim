@@ -5,62 +5,111 @@
 # This file contains code to fine the MLE (Maximum Likelihood Estiment) of a distribution form the
 # samples.
 
-import sympy as sp
+# import sympy as sp
 import cvxpy as cp
-from matplotlib import pyplot as plot
 
+from matplotlib import pyplot as plot
 from numpy import sinc
+from sympy import lambdify
 
 from LocUtil import Grid1, MinMax, UnZip
 from Sinc import InterpZ
 
 
-def DistZ(sampX, map_, nSinc):
+#########################################################################
+# This function finds the MLE distribution for a sinc approximation
+def Sinc(sampX, map_, nSinc):
   # process arguments
+  nSamp = len(sampX)
   sampSort = sorted(sampX)
 
   # Analize the map
   zSym = map_.zSym
   xSym = map_.xSym
 
-  jacobSym = map_.invSym.diff(zSym).factor()
-  jacob = sp.lambdify(zSym, jacobSym)
-
   # map samples to z
-  sampZ = tuple(map_.Forward(x) for x in sampSort)
+  zMin,zMax = map_.Forward(sampX[0]), map_.Forward(sampX[nSamp - 1])
 
   # setup sinc point
-  sincVal = cp.Variable(nSinc)
-  zMin,zMax = MinMax(sampZ)
-
   h = (zMax - zMin) / (nSinc - 1)
   sincZ = Grid1(zMin,zMax, nSinc)
+  sincX = tuple(map_.Inverse(z) for z in sincZ)
 
   # setup cost function
-  logLike = lambda z: \
-    cp.log(sum(sv * sinc((z - sz) / h) for (sz, sv) in zip(sincZ, sincVal)))
+  sincVar = cp.Variable(nSinc)
 
-  objective = cp.Maximize(sum(logLike(z) * jacob(z) for z in sampZ))
+  phiX = lambdify(xSym, map_.forSym)   # for code clarity
+  logLike = lambda x: \
+    cp.log(sum(sv * sinc((phiX(x) - sx) / h) for (sx, sv) in zip(sincX, sincVar)))
+  objective = cp.Maximize(sum(logLike(z) for z in sampZ))
 
-  # setup constraints
-  constEach = tuple(0 <= sv for sv in sincVal)
-  constArea = h * sum(sv for (sz, sv) in zip(sincZ, sincVal)) == 1
+  # setup the constraints
+  # TODO: strange that the positive constraint is necessary
+  constEach = tuple(0 <= sv for sv in sincVar)
+
+  phiPrime = map_.DzDx    # for code clarity
+  constArea = h * sum(sv * phiPrime(sx) for (sx, sv) in zip(sincX, sincVar)) == 1
+
   const = constEach + (constArea,)
 
   # solve the problem
   prob = cp.Problem(objective, const)
-  print(f'Num. Constraints = {len(prob.constraints)}')
-  print(prob.constraints)
+  prob.solve()
 
-  prob.solve(verbose=True)
-
-  sincV = list(sincVal.value)
-  sincPoint = tuple(zip(sincZ, sincV))
+  sincV = tuple(sincVar.value)
+  sincPoint = tuple(zip(sincX, sincV))
 
   # return result
   return sincPoint
 
 
+#########################################################################
+def RmsDiff(sincApprox, func, eps=1e-6):
+  sincPoint,map_ = sincApprox
+  nSinc = len(sincPoint)
+
+  # TODO:  Make this a seperate module called QuadSikorski
+  # set up
+  zMin,zMax = map_.Forward(sincPoint[0][0]), map_.Forward(sincPoint[nSinc - 1][0])
+  zMid = (zMax - zMin) / 2
+  h = (zMax - zMin) / (nSinc - 1)
+
+  diffZ = lambda z: sincApprox.InterpZ(z) - func(z)
+
+  # Initial samples ... need to at least meet the Nyquest critera
+  sampL = []
+
+  z = zMid
+  leftCount = 0
+
+  while True:
+    samp = diffZ(z) * phiPrimeZ(z)
+    if (z <= zMin) and (abs(samp) < eps/3):
+      break
+
+    sampL.append(samp)
+    z = z - h
+    leftCount += 1
+
+  z = zMid + h
+  rightCount = 1
+
+  while True:
+    samp = diffZ(z) * phiPrimeZ(z)
+    if (z <= zMin) and (abs(samp) < eps/3):
+      break
+
+    sampL.append(samp)
+    z = z + h
+    rightCount += 1
+
+  prevVal = LowRoundSum(sampL)
+
+  # iterate on h
+  h = h /2
+
+
+#########################################################################
 def PlotEstZ(sincPointZ, tureDist, map_, zRange, sampX=None, nPlot=101):
   # compute (and plot) the PDF of Z
   zGrid = Grid1(*zRange, nPlot)
