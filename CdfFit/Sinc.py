@@ -4,72 +4,85 @@
 
 # This file defines functions for fitting to sinc approximations to noise data.
 
+from math import ceil
 from numpy import sinc
-from scipy.linalg import lstsq
+from scipy.optimize import fsolve
 
 from LocUtil import Grid1, MinMax, UnZip
 
 
-def FitLstSqr(samp, zRange,nSinc):
-  sampZ, sampV = UnZip(samp)
-  sincZ = Grid1(*zRange, nSinc)
-  h = (zRange[1] - zRange[0]) / (nSinc - 1)
+###############################################################
+class SincApprox(object):
+  def __init__(self, zMin,zMax,nSinc, sincV, map_):
+    self.nSinc = nSinc
 
-  mat = []
-  for z in sampZ:
-    row = []
-    for sp in sincZ:
-      row.append(sinc((z - sp) / h))
-    mat.append(row)
+    self.sincZ = Grid1(zMin,zMax, nSinc)
+    self.h = (zMax - zMin) / (nSinc - 1)
 
-  sincV, residue, rank, singVal = lstsq(mat, sampV)
+    self.sincX = tuple(map_.Inverse(z) for z in self.sincZ)
+    self.sincV = sincV
 
-  if rank < nSinc:
-    residue = 0
-    condNum = float('inf')
-  else:
-    condNum = singVal[0] / singVal[len(singVal) - 1]
+    self.map = map_
 
-  return (tuple(zip(sincZ,sincV)), residue, condNum)
+  def InterpX1(self, gridX):
+    gridZ = tuple(self.map.Forward(x) for x in gridX)
+    result = self.InterpZ1(gridZ)
 
+    return result
 
-def InterpZ(sincZ, sincV, grid):
-  h = sincZ[1] - sincZ[0]
+  def InterpZ1(self, gridZ):
+    result = tuple(self.InterpZ0(z) for z in gridZ)
+    return result
 
-  result = []
-  for z in grid:
-    val = 0
-    for (sp, sv) in zip(sincZ,sincV):
-      val += sv * sinc((z - sp) / h)
-    result.append(val)
+  def InterpX0(self, x):
+    z = self.map.Forward(x)
+    result = self.InterpZ0(z)
 
-  return result
+    return result
 
-def QuadZ(sincPoint):
-  _,sincV = UnZip(sincPoint)
-  result = sum(sincV)
-
-  return result
+  def InterpZ0(self, z):
+    result = sum(sv * sinc((z - sz) / self.h) for (sz, sv) in zip(self.sincZ, self.sincV))
+    return result
 
 
 ###############################################################
-# Stuff to work on a Sinc approximation type
-# class SincApp(object):
-#   def __init__(self):
-#     pass
-#
-#   def Interp(self, grid):
-#     sincX = sincInfo['sincX']
-#     sincV = sincInfo['sincV']
-#     map = sincInfo['map']
-#
-#     sincZ = tuple(map.Forward(x) for x in sincX)
-#
-#     result = []
-#     for z in grid:
-#       val = 0
-#       for (sz, sv) in zip(sincZ,sincV):
-#         val += sv * sinc((z - sz) / h)
-#       result.append(val)
-#
-#     return result
+# TODO:  Do fsolve in x domain to avoid the need for approxZLim (at least for finite domain)
+# TODO:  Add heuristic for starting that we are far enough out to have the right asymptotics.
+# TODO:  Think about what to do when the function has zeros that may confuse the limits
+# TODO:  Factor out starting criteria to avoid overhead in repeated applications.
+# TODO:  Factor out starting criteria to allow escalation
+# TODO:  Add check for non-exponential convergence caused by discontinuities at end in zRange
+def QuadSikorski(Func, map_, approxZLim, eps=1e-6, maxH=None):
+  Z2X = map_.Inverse
+  InvWeight = map_.DzDx
+  SummandX = lambda x: Func(x) / InvWeight(x)
+  SummandZ = lambda z: SummandX(Z2X(z))
+
+  zLowLim,zHighLim = approxZLim
+  zMin = fsolve(lambda z: abs(SummandZ(z[0])) - 0.4*eps, zLowLim)[0]
+  zMax = fsolve(lambda z: abs(SummandZ(z[0])) - 0.4*eps, zHighLim)[0]
+
+  if maxH is None:
+    n = 10
+  else:
+    n = ceil((zMax - zMin) / maxH)
+
+  h = (zMax - zMin) / (n - 1)
+
+  samp = tuple(SummandZ(zMin + k*h) for k in range(n + 1))
+  result = h * sum(samp)
+
+  for itNum in range(10):
+    prevResult = result
+
+    n *= 2
+    h /= 2
+
+    newSamp = tuple(SummandZ(zMin + k*h) for k in range(1,n + 1, 2))
+    samp += newSamp
+
+    result = h * sum(samp)
+    if abs(result - prevResult) < 0.2*eps:
+      break
+
+  return (result, (zMin,zMax,n))

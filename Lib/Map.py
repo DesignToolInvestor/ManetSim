@@ -25,12 +25,12 @@ class LogRatio(object):
     self.Inverse = lambdify(zSym, self.invSym)
 
     # Compute the Jacobian.  This is phi-inverse-prime.
-    self.dxDz = self.invSym.diff(zSym).factor()
-    self.DxDz = lambdify(zSym, self.dxDz)
+    self.dxDzSym = self.invSym.diff(zSym).factor()
+    self.DxDz = lambdify(zSym, self.dxDzSym)
 
     # Compute the inverse Jacobian.  This is phi-prime.
-    self.dzDx = self.forSym.diff(xSym).factor()
-    self.DzDx = lambdify(xSym, self.dzDx)
+    self.dzDxSym = self.forSym.diff(xSym).factor()
+    self.DzDx = lambdify(xSym, self.dzDxSym)
 
     # save stuff needed by other methods
     self.xRange = xRange
