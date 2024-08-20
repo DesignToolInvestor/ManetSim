@@ -4,7 +4,7 @@
 
 # This file defines functions for fitting to sinc approximations to noise data.
 
-from math import ceil
+from math import ceil, isfinite, pi
 from numpy import sinc
 from scipy.optimize import fsolve
 
@@ -44,6 +44,25 @@ class SincApprox(object):
     result = sum(sv * sinc((z - sz) / self.h) for (sz, sv) in zip(self.sincZ, self.sincV))
     return result
 
+  def EnvZ(self, z):
+    nSinc = self.nSinc
+    h = self.h
+
+    if (self.sincZ[0] <= z) and (z <= self.sincZ[self.nSinc - 1]):
+      result = self.InterpZ0(z)
+    else:
+      def TailEnv(z, zk, h):
+        if abs((z - zk) / h) < 0.5:
+          result = sinc((z - zk) / h)
+        else:
+          result = h / (pi * abs(z - zk))
+        return result
+
+      terms = tuple((-1) ** k * self.sincV[k] * TailEnv(z, self.sincZ[k], h) for k in range(nSinc))
+      result = abs(sum(terms))
+
+    return result
+
 
 ###############################################################
 # TODO:  Do fsolve in x domain to avoid the need for approxZLim (at least for finite domain)
@@ -60,7 +79,10 @@ def QuadSikorski(Func, map_, approxZLim, eps=1e-6, maxH=None):
 
   zLowLim,zHighLim = approxZLim
   zMin = fsolve(lambda z: abs(SummandZ(z[0])) - 0.4*eps, zLowLim)[0]
+  assert(isfinite(zMin))
+
   zMax = fsolve(lambda z: abs(SummandZ(z[0])) - 0.4*eps, zHighLim)[0]
+  assert(isfinite(zMin))
 
   if maxH is None:
     n = 10

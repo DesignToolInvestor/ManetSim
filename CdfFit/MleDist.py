@@ -13,6 +13,7 @@ from numpy import sinc
 from sympy import lambdify
 
 from LocUtil import Grid1, MinMax, UnZip
+from LocMath import Interp1
 from Sinc import QuadSikorski, SincApprox
 
 
@@ -62,28 +63,64 @@ def Sinc(sampX, map_, nSinc):
 
 
 #########################################################################
-def RmsDiff(sincApprox, Func, eps=1e-6):
+def RmsDiff(sincApprox, Func, epsMin=1e-6):
   diff = lambda x: sincApprox.InterpX0(x) - Func(x)
   approxZLim = (sincApprox.sincZ[0], sincApprox.sincZ[sincApprox.nSinc - 1])
-  result = QuadSikorski(diff, sincApprox.map, approxZLim, eps=eps, maxH=sincApprox.h)
 
+  nSinc = sincApprox.nSinc
+  eps = abs(sincApprox.sincV[0]) + abs(sincApprox.sincV[nSinc - 1])
+  if eps < epsMin:
+    eps = epsMin
+
+  result = QuadSikorski(diff, sincApprox.map, approxZLim, eps=eps, maxH=sincApprox.h)
   return result
 
 
 #########################################################################
-def PlotPdfEst(pdfApprox, map_, dist, sampX):
-  # compute plot range
+def PlotPdfEstZ(pdfApprox, pdfF, sampX, annotation=None):
+  # parse the arguments
+  nSinc = pdfApprox.nSinc
   h = pdfApprox.h
 
-  zMin, zMax = MinMax(tuple(map_.Forward(x) for x in sampX))
+  X2Z = pdfApprox.map.Forward
+  Z2X = pdfApprox.map.Inverse
+
+  sampZ = tuple(X2Z(x) for x in sampX)
+
+  # compute the plotting range
+  zMin, zMax = MinMax(sampZ)
   plotRange = (zMin - 2 * h, zMax + 2 * h)
 
-  # plot fit
-  MleDist.PlotEstZ(pdfApprox.sincZ, dist, map_, plotRange, sampX=sampX)
+  # plot true distribution
+  nPlot = 4 * (nSinc + 4) + 1 if 8 < nSinc else 101
+  zGrid = Grid1(*plotRange, nPlot)
 
-  xMin, xMax, yMin, yMax = plot.axis()
-  xPos = Interp1(xMin, xMax, 0.95)
-  yPos = Interp1(yMin, yMax, 0.95)
-  plot.text(xPos, yPos, text, ha='right', va='top')
+  xGrid = tuple(Z2X(z) for z in zGrid)
+  pdfTrue = tuple(pdfF(x) for x in xGrid)
 
-  plot.show()
+  plot.plot(zGrid,pdfTrue, c='blue', zorder=-3)
+
+  # plot the sinc points
+  plot.plot(pdfApprox.sincZ, pdfApprox.sincV, 'o', c="green", markersize=4, zorder=-1)
+
+  pdfEst = pdfApprox.InterpZ1(zGrid)
+  plot.plot(zGrid,pdfEst, c='green', zorder=-2)
+
+  # plot the samples
+  sampTrue = tuple(pdfF(x) for x in sampX)
+  sampEst = pdfApprox.InterpX1(sampX)
+
+  linesX = (sampZ, sampZ)    # this is x-start-list and x-end list
+  linesY = (sampTrue, sampEst)
+
+  plot.plot(linesX, linesY,  c='red', zorder=0)
+
+  # add annotation
+  if annotation is not None:
+    xMin, xMax, yMin, yMax = plot.axis()
+    xPos = Interp1(xMin, xMax, 0.95)
+    yPos = Interp1(yMin, yMax, 0.95)
+    plot.text(xPos, yPos, annotation, ha='right', va='top')
+
+  plot.xlabel('z')
+  plot.ylabel('Pdf (without Jacobian)')
