@@ -142,7 +142,7 @@ def MapInverse(map_, nOld):
 
   return invMap
 
-
+# TODO:  Change this to work with an iterator
 def MinMax(list_):
   min_ = max_ = list_[0]
   for i in range(1, len(list_)):

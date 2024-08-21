@@ -71,7 +71,7 @@ class SincApprox(object):
 # TODO:  Factor out starting criteria to avoid overhead in repeated applications.
 # TODO:  Factor out starting criteria to allow escalation
 # TODO:  Add check for non-exponential convergence caused by discontinuities at end in zRange
-def QuadSikorski(Func, map_, approxZLim, eps=1e-6, maxH=None):
+def QuadSikorskiWrap(Func, map_, approxZLim, eps=1e-6, maxH=None):
   Z2X = map_.Inverse
   InvWeight = map_.DzDx
   SummandX = lambda x: Func(x) / InvWeight(x)
@@ -108,3 +108,34 @@ def QuadSikorski(Func, map_, approxZLim, eps=1e-6, maxH=None):
       break
 
   return (result, (zMin,zMax,n))
+
+#######################################
+def QuadSikorski(Func, map_, zRange, nStart):
+  Z2X = map_.Inverse
+  InvWeight = map_.DzDx
+  SummandX = lambda x: Func(x) / InvWeight(x)
+  SummandZ = lambda z: SummandX(Z2X(z))
+
+  zMin, zMax = zRange
+  n = nStart
+  h = (zMax - zMin) / (n - 1)
+
+  eps = abs(Func(Z2X(zMin))) + abs(Func(Z2X(zMax)))
+
+  samp = tuple(SummandZ(zMin + k*h) for k in range(n))
+  result = h * sum(samp)
+
+  for itNum in range(10):
+    prevResult = result
+
+    n *= 2
+    h /= 2
+
+    newSamp = tuple(SummandZ(zMin + k*h) for k in range(1,n + 1, 2))
+    samp += newSamp
+
+    result = h * sum(samp)
+    if abs(result - prevResult) < eps:
+      break
+
+  return (result, n)

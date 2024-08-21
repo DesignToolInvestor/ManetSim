@@ -8,6 +8,7 @@
 # import sympy as sp
 import cvxpy as cp
 
+from math import log
 from matplotlib import pyplot as plot
 from numpy import sinc
 from sympy import lambdify
@@ -20,14 +21,12 @@ from Sinc import QuadSikorski, SincApprox
 #########################################################################
 # This function finds the MLE distribution for a sinc approximation
 def Sinc(sampX, map_, nSinc):
+  # process argumens
   xSym = map_.xSym
   zSym = map_.zSym
 
   phiPrimeSym = (1 / map_.forSym.diff(xSym)).factor()
   phiPrimeX = lambdify(xSym, phiPrimeSym)
-
-  # process arguments
-  sampZ = tuple(map_.Forward(x) for x in sampX)
 
   # map samples to z
   xRange = MinMax(sampX)
@@ -44,7 +43,7 @@ def Sinc(sampX, map_, nSinc):
   phiX = lambdify(xSym, map_.forSym)
   logLikeP = lambda x: (
     cp.log(sum(sv * sinc((phiX(x) - sz) / h) for (sz, sv) in zip(sincZ, sincVar))))
-  obj = cp.Maximize(sum(logLikeP(x) for x in sampX))
+  objective = cp.Maximize(sum(logLikeP(x) for x in sampX))
 
   # setup the constraints
   # TODO: strange that the positive constraint is necessary
@@ -54,25 +53,48 @@ def Sinc(sampX, map_, nSinc):
   const = constEach + [constArea]
 
   # solve the problem
-  prob = cp.Problem(obj, const)
+  prob = cp.Problem(objective, const)
   solveResult = prob.solve()
 
   # return result
   sincV = tuple(sincVar.value)
   return SincApprox(zMin,zMax,nSinc, sincV, map_)
 
+#########################################################################
+def RmsDiff(approx, Func):
+  # parse argumens
+  h = approx.h
+  nSinc = approx.nSinc
+  sincZ = approx.sincZ
+
+  # define difference
+  diff = lambda x: (approx.InterpX0(x) - Func(x)) ** 2
+  zRange = (sincZ[0] - 1.5*h, sincZ[nSinc - 1] + 1.5*h)
+
+  result = QuadSikorski(diff, approx.map, zRange, 40)
+  return result
 
 #########################################################################
-def RmsDiff(sincApprox, Func, epsMin=1e-6):
-  diff = lambda x: sincApprox.InterpX0(x) - Func(x)
-  approxZLim = (sincApprox.sincZ[0], sincApprox.sincZ[sincApprox.nSinc - 1])
+def EstLogLike(pdfApprox, sampX):
+  pdfEst = pdfApprox.InterpX1(sampX)
+  result = sum(log(p) for p in pdfEst)
 
-  nSinc = sincApprox.nSinc
-  eps = abs(sincApprox.sincV[0]) + abs(sincApprox.sincV[nSinc - 1])
-  if eps < epsMin:
-    eps = epsMin
+  return result
 
-  result = QuadSikorski(diff, sincApprox.map, approxZLim, eps=eps, maxH=sincApprox.h)
+#########################################################################
+def ExpLogLike(pdfApprox):
+  def integrand(x):
+    if (x <= 0) or (2 <= x):
+      breakpoint()
+    prob = pdfApprox.InterpX0(x)
+    if prob < 0:
+      breakpoint()
+
+    result = pdfApprox.InterpX0(x) * log(pdfApprox.InterpX0(x))
+    return result
+
+  result = QuadSikorski(integrand, pdfApprox.map, (-6,12),40)
+
   return result
 
 
@@ -110,10 +132,7 @@ def PlotPdfEstZ(pdfApprox, pdfF, sampX, annotation=None):
   sampTrue = tuple(pdfF(x) for x in sampX)
   sampEst = pdfApprox.InterpX1(sampX)
 
-  linesX = (sampZ, sampZ)    # this is x-start-list and x-end list
-  linesY = (sampTrue, sampEst)
-
-  plot.plot(linesX, linesY,  c='red', zorder=0)
+  plot.plot(sampZ, sampTrue,  '.', c='red', zorder=0)
 
   # add annotation
   if annotation is not None:
