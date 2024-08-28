@@ -84,16 +84,16 @@ def EstLogLike(pdfApprox, sampX):
 #########################################################################
 def ExpLogLike(pdfApprox):
   def integrand(x):
-    if (x <= 0) or (2 <= x):
-      breakpoint()
-    prob = pdfApprox.InterpX0(x)
-    if prob < 0:
-      breakpoint()
+    pdf = pdfApprox.InterpX0(x)
+    if pdf < 0:
+      result = 0
+    else:
+      result = pdf * log(pdf)
 
-    result = pdfApprox.InterpX0(x) * log(pdfApprox.InterpX0(x))
     return result
 
-  result = QuadSikorski(integrand, pdfApprox.map, (-6,12),40)
+  zMin,zMax = pdfApprox.sincZ[0], pdfApprox.sincZ[pdfApprox.nSinc - 1]
+  result = QuadSikorski(integrand, pdfApprox.map, (zMin,zMax),40)
 
   return result
 
@@ -132,7 +132,7 @@ def PlotPdfEstZ(pdfApprox, pdfF, sampX, annotation=None):
   sampTrue = tuple(pdfF(x) for x in sampX)
   sampEst = pdfApprox.InterpX1(sampX)
 
-  plot.plot(sampZ, sampTrue,  '.', c='red', zorder=0)
+  # plot.plot(sampZ, sampTrue,  '.', c='red', zorder=0)
 
   # add annotation
   if annotation is not None:
