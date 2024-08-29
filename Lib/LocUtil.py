@@ -239,6 +239,15 @@ def IndexOfFirst(func, list_):
   return None
 
 
+def IndexOf(listLike, Cond):
+  result = []
+  for k in range(len(listLike)):
+    if Cond(listLike[k]):
+      result.append(k)
+
+  return result
+
+
 def Swap(list_, index0, index1):
   temp = list_[index0]
   list_[index0] = list_[index1]
