@@ -35,6 +35,21 @@ def LogGrid1(start, stop, nPoint):
   return result
 
 
+def LogGridInt(min_, max_, nResult):
+  lnMax = log(max_)
+
+  result = [min_]
+  val = min_
+
+  for k in range(nResult - 1):
+    nextGrid = round(val * exp((lnMax - log(val)) / (nResult - k - 1)))
+    val = max(val + 1, nextGrid)
+
+    result.append(val)
+
+  return result
+
+
 def GridN(spec):
   margin = [Grid1(*s) for s in spec]
   result = Kron(margin)
